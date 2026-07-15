@@ -1,6 +1,12 @@
 from app.config import SAMPLE_IMAGES_DIR
 
-SAMPLE_IMAGE = SAMPLE_IMAGES_DIR / "otro_bache.jpg"
+# Must be an image the *current* fine-tuned weights actually detect above
+# the default confidence threshold - this changes across retrains (see
+# /model/README.md's note on why detection counts shifted after the
+# RDD2022 retrain). Verify with:
+#   python -c "from app.detection.detector import detect; from app.config import SAMPLE_IMAGES_DIR as d; \
+#     print([(p.name, len(detect(p))) for p in sorted(d.glob('*.jpg'))])"
+SAMPLE_IMAGE = SAMPLE_IMAGES_DIR / "portlandroadrut.jpg"
 
 
 def test_health(client):
@@ -22,7 +28,7 @@ def test_detect_creates_open_defect_with_explanation(client):
         resp = client.post(
             "/defects/detect",
             data={"segment_id": 1, "source": "inspection"},
-            files={"file": ("otro_bache.jpg", f, "image/jpeg")},
+            files={"file": ("portlandroadrut.jpg", f, "image/jpeg")},
         )
     assert resp.status_code == 200
     defects = resp.json()
@@ -38,7 +44,7 @@ def test_queue_reflects_created_defect_and_review_removes_it(client):
         client.post(
             "/defects/detect",
             data={"segment_id": 1, "source": "inspection"},
-            files={"file": ("otro_bache.jpg", f, "image/jpeg")},
+            files={"file": ("portlandroadrut.jpg", f, "image/jpeg")},
         )
 
     queue = client.get("/queue?status=open").json()
@@ -70,7 +76,7 @@ def test_repeat_report_matches_existing_open_defect(client):
         first = client.post(
             "/reports",
             data={"segment_id": 1, "source": "citizen"},
-            files={"file": ("otro_bache.jpg", f, "image/jpeg")},
+            files={"file": ("portlandroadrut.jpg", f, "image/jpeg")},
         ).json()
     assert first["matched_existing_defect"] is False
 
@@ -78,7 +84,7 @@ def test_repeat_report_matches_existing_open_defect(client):
         second = client.post(
             "/reports",
             data={"segment_id": 1, "source": "citizen"},
-            files={"file": ("otro_bache.jpg", f, "image/jpeg")},
+            files={"file": ("portlandroadrut.jpg", f, "image/jpeg")},
         ).json()
     assert second["matched_existing_defect"] is True
     assert second["defect"]["id"] == first["defect"]["id"]

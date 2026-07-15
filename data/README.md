@@ -5,21 +5,47 @@ parts are real and which are synthetic, per the project's data-honesty
 requirement — nothing here is presented as real open government data unless
 it explicitly says so (nothing currently is: see below).
 
-## 1. Detection training images — real, individually sourced
+## 1. Detection training images — real, two sources
 
-13 real photographs of road potholes/cracks, downloaded individually from
-Wikimedia Commons (not a bulk dataset — see `/model/README.md` for why).
-Full attribution, license, and source URL for every image is in
-`backend/data/sample_images/SOURCES.md`. Hand-drawn bounding box
-coordinates are in `backend/data/detect_dataset/ANNOTATIONS.md`.
+**a) 13 hand-labeled photographs** of road potholes/cracks, downloaded
+individually from Wikimedia Commons. Full attribution, license, and source
+URL for every image is in `backend/data/sample_images/SOURCES.md`.
+Hand-drawn bounding box coordinates are in
+`backend/data/detect_dataset/ANNOTATIONS.md`.
 
-We looked for an accessible open road-damage dataset (RDD2022, Kaggle
-pothole sets) first; both require credentials/an account this environment
-didn't have, so we fell back to this small, real, individually-licensed
-set rather than fabricate images. This is exactly the fallback the project
-brief anticipates ("falling back to a documented synthetic approach if
-not [accessible]") — see `/model/README.md` for the honest accuracy
-consequences of that choice.
+**b) A 1,000-image sample of RDD2022** (Road Damage Dataset 2022, released
+through CRDDC'2022 - Arya et al., "RDD2022: A multi-national image dataset
+for automatic Road Damage Detection"), Czech Republic subset specifically
+(the smallest per-country zip, ~245MB, of the six countries in the
+release - see the full list in `scripts/fetch_rdd2022.sh`). Downloaded
+directly and publicly from the official CRDDC2022 S3 bucket, **no account
+or API key required** - the earlier assumption in this repo that RDD2022
+needed credentials was wrong; only the GitHub Releases API happened to be
+empty for that repo. License: CC BY-SA 4.0 (per
+[sekilab/RoadDamageDetector](https://github.com/sekilab/RoadDamageDetector)'s
+README).
+
+- Reproduce with: `./scripts/fetch_rdd2022.sh` (downloads + converts;
+  deterministic, seed=7).
+- `scripts/convert_rdd2022.py` maps RDD2022's Pascal-VOC-XML damage codes
+  onto RoadWatch's taxonomy: **D00/D01/D10/D11/D20/D21 (longitudinal,
+  transverse, and alligator cracking) → `crack`**, **D40 (pothole/rutting/
+  bump) → `pothole`**. Every other RDD2022 code is dropped, and the Czech
+  subset only contains D00/D10/D20/D40 anyway (988/399/161/197 raw
+  instances respectively) - see the conversion script's printed summary.
+  This is also why `broken_curb` and `faded_marking` remain at zero real
+  training images even after this import (see §6 and `/model/README.md`).
+- Of 2,829 annotated Czech train images, 1,072 have at least one
+  mappable damage box; this sample uses 1,000 of them (900 train / 100
+  val, seeded shuffle), merged alongside the original 13/4 hand-labeled
+  split - see `/model/README.md` for exact final counts and measured
+  accuracy.
+- The RDD2022-derived images/labels themselves are **not committed** to
+  this repo (regenerate via the script above - deterministic) to keep
+  repository size down; the 13 original hand-labeled images remain
+  committed as before. The resulting trained weights
+  (`backend/data/weights/roadwatch_ft.pt`) **are** committed - see
+  "Out-of-the-box demo" in `/README.md`.
 
 ## 2. Traffic volume — 100% synthetic (documented)
 
@@ -61,14 +87,28 @@ Almaty-specific and the district list is a config constant
 
 ## 4. Defect & report volume — mixed real + synthetic
 
-- **9 defects** come from running the real fine-tuned YOLOv8 detector
-  against the 13 real sample images (`model_source: "roadwatch-finetuned"`).
-- **40 defects** are purely synthetic (`model_source: "seed-synthetic"`):
-  random defect class, confidence (uniform 0.35–0.95), and area% (uniform
-  within a class-appropriate range) — generated only to give the demo
-  dashboard enough volume to look like a real queue/map/analytics view. No
-  detector was run on these; their "photo" is a randomly-reused stand-in
-  image, not evidence of an actual defect at that location.
+- A handful of defects (currently **2**, re-run `python -m app.seed` and
+  check its printed summary for the exact current count — this number
+  moves whenever the detector is retrained, since it depends on which of
+  the 13 sample images the *current* weights detect above the 0.25
+  confidence threshold) come from running the real fine-tuned YOLOv8
+  detector against the 13 real sample images
+  (`model_source: "roadwatch-finetuned"`). This count dropped from an
+  earlier build's 9 after retraining on the merged RDD2022 dataset (see
+  `/model/README.md`) — the earlier model had, in effect, memorized these
+  exact 13 images from training on nothing else; the current model
+  generalizes from a much larger, more diverse set instead, and detects
+  fewer of these specific photos as a side effect. That's an honest
+  consequence of real training, not a bug being hidden.
+- **40 defects** are purely synthetic (`model_source: "seed-synthetic"`),
+  and only ever `pothole`/`crack` (`app.config.TRAINED_DEFECT_CLASSES`) -
+  random confidence (uniform 0.35–0.95) and area% (uniform within a
+  class-appropriate range) — generated only to give the demo dashboard
+  enough volume to look like a real queue/map/analytics view. No detector
+  was run on these; their "photo" is a randomly-reused stand-in image, not
+  evidence of an actual defect at that location. `broken_curb`/
+  `faded_marking` are deliberately never generated here - see
+  `/README.md`'s taxonomy-honesty note.
 - **Repeat reports**: ~30% of defects get 1-4 extra synthetic `Report` rows
   with `submitted_at` timestamps spread over the past 0-18 days, to
   demonstrate the time-decayed repeat-report clustering
@@ -102,7 +142,8 @@ just in prose.
 
 - No real traffic, repeat-report, or district-boundary data was used
   anywhere in this prototype - see §§2-3.
-- Seed volume (40/49 defects) intentionally dwarfs real-detection volume
-  (9/49) to make the demo dashboard look populated; don't read total counts
-  in the Analytics page as evidence of real defect prevalence.
+- Synthetic seed volume (40 defects) intentionally dwarfs real-detection
+  volume (a handful, see §4) to make the demo dashboard look populated;
+  don't read total counts in the Analytics page as evidence of real defect
+  prevalence.
 - District/segment geography is illustrative, not survey-grade.

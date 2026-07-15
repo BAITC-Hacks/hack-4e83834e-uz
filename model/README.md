@@ -15,33 +15,41 @@ which has no road-defect classes — see "Fallback behavior" below).
 
 ### Training data — be honest about this
 
-No open road-damage dataset (RDD2022, Kaggle pothole sets, Roboflow
-Universe) was reachable from this environment without an account/API key
-(Kaggle requires `kaggle.json` credentials, Roboflow programmatic export
-requires an API key, RDD2022 is a multi-GB download not practical mid-build).
-Rather than fabricate detection quality or fake a dataset, we used a small,
-individually-downloaded, hand-labeled set:
+**Update:** the original build of this project stated RDD2022 wasn't
+reachable without credentials. That was wrong - only the GitHub Releases
+API for that repo happened to be empty; the dataset itself is downloadable
+directly and publicly from the official CRDDC2022 S3 bucket, no account
+needed (see `scripts/fetch_rdd2022.sh`). The detector below is now
+retrained on real data as a result. Two sources are merged into
+`backend/data/detect_dataset/`:
 
-- **13 source images** of real potholes and cracks, downloaded individually
-  from Wikimedia Commons under permissive licenses (CC0 / CC BY / CC BY-SA /
-  Public Domain) — see `backend/data/sample_images/SOURCES.md` for the exact
-  file, license, and attribution of each image.
-- **15 bounding boxes**, drawn by hand via visual inspection of each image
-  (no auto-labeling tool) — see `backend/data/detect_dataset/ANNOTATIONS.md`
-  for the exact pixel coordinates of every box and which split (train/val)
-  it's in.
-- Only **2 of the 4** taxonomy classes are represented: `pothole` (5 images)
-  and `crack` (8 images). **`broken_curb` and `faded_marking` have zero
-  training images** — the fine-tuned model cannot currently detect them at
-  all. Any `broken_curb`/`faded_marking` defects you see in the demo
-  dashboard come from the seed script's synthetic data generator
-  (`model_source: "seed-synthetic"`), not real detection.
-- Split: 9 images (11 boxes) train / 4 images (4 boxes) val.
-
-This is enough to prove the pipeline is genuinely end-to-end — a real
-image goes in, real YOLOv8 inference comes out — but it is **not** enough
-data to produce a production-accurate detector. Treat all detection output
-as illustrative.
+- **13 hand-labeled images** of real potholes and cracks, downloaded
+  individually from Wikimedia Commons under permissive licenses (CC0 / CC
+  BY / CC BY-SA / Public Domain) — see
+  `backend/data/sample_images/SOURCES.md` for exact file/license/attribution,
+  and `backend/data/detect_dataset/ANNOTATIONS.md` for the hand-drawn box
+  coordinates (15 boxes: 5 images pothole / 8 images crack).
+- **A 1,000-image sample of RDD2022** (CRDDC'2022, Czech Republic subset,
+  CC BY-SA 4.0) — 900 train / 100 val, downloaded and converted via
+  `scripts/fetch_rdd2022.sh` + `scripts/convert_rdd2022.py`. RDD2022 damage
+  codes D00/D01/D10/D11/D20/D21 (longitudinal/transverse/alligator
+  cracking) map to `crack`; D40 (pothole/rutting/bump) maps to `pothole`.
+  This produced 1,449 `crack` boxes and 185 `pothole` boxes — crack is
+  heavily overrepresented in the Czech subset itself, which shows up in the
+  per-class results below.
+- **Final merged dataset: 909 train images / 104 val images**, still only
+  **2 of the 4** taxonomy classes (`pothole`, `crack`).
+  **`broken_curb` and `faded_marking` still have zero training images** —
+  RDD2022 has no equivalent classes for either. The detector cannot detect
+  them; the seed generator and frontend filters no longer offer them as if
+  they were live (see `/README.md`'s taxonomy-honesty note) — any
+  `broken_curb`/`faded_marking` defect on an unreseeded old database would
+  be pre-existing synthetic data, never labeled as real detection.
+- The RDD2022-derived images/labels are reproducible (deterministic,
+  seed=7) but **not committed** to this repo, to keep repository size
+  reasonable — the 13 hand-labeled images stay committed as before. The
+  resulting trained weights (`backend/data/weights/roadwatch_ft.pt`) **are**
+  committed — see "Out-of-the-box demo" in `/README.md`.
 
 ### Training run
 
@@ -49,57 +57,72 @@ as illustrative.
 cd backend && source venv/bin/activate && python -m app.detection.train
 ```
 
-60 epochs, YOLOv8n base, imgsz=640, batch=4, light augmentation
-(rotation/translate/scale/flip/mosaic) to partially compensate for the tiny
-dataset. Full config is in `app/detection/train.py`.
+`train.py` scales its settings to dataset size: batch=16 / patience=15
+early stopping / up to 50 epochs for a merged dataset like this one (vs.
+batch=4 / no early stopping / 60 epochs for the original tiny
+hand-labeled-only set), and uses Apple Silicon MPS or CUDA if available,
+falling back to CPU otherwise (`_best_device()` in `app/detection/train.py`
+— training still runs on CPU alone, just slower). Light augmentation
+(rotation/translate/scale/flip/mosaic) is unchanged. This run early-stopped
+at epoch 48 (best weights from epoch 33, patience=15).
 
-### Measured results (honest, small-sample numbers)
-
-On the **4-image validation holdout** (this is the entire holdout — these
-numbers have enormous variance and should not be read as "the model is
-X% accurate" in any general sense):
+### Measured results (104-image validation set — a real holdout, not a 4-image one)
 
 | Metric | Value |
 |---|---|
-| mAP50 (all classes) | 0.382 |
-| mAP50-95 (all classes) | 0.230 |
-| Precision | 0.287 |
-| Recall | 0.500 |
+| mAP50 (all classes) | 0.253 |
+| mAP50-95 (all classes) | 0.102 |
+| Precision | 0.289 |
+| Recall | 0.296 |
 
 Per class:
 
-| Class | mAP50 | mAP50-95 | Precision | Recall |
-|---|---|---|---|---|
-| pothole | 0.247 | 0.111 | 0.298 | 0.500 |
-| crack | 0.517 | 0.349 | 0.277 | 0.500 |
+| Class | Images | Instances | mAP50 | mAP50-95 | Precision | Recall |
+|---|---|---|---|---|---|---|
+| pothole | 15 | 17 | 0.089 | 0.043 | 0.104 | 0.118 |
+| crack | 100 | 154 | 0.418 | 0.160 | 0.475 | 0.474 |
 
-At inference time (`conf_threshold=0.25`, the default in `detector.py`),
-running the fine-tuned model against the full 13-image sample set during
-seeding, **9 of 13 images produced at least one detection above threshold**
-— i.e. roughly a third of even our own hand-picked, unambiguous example
-photos were missed at this confidence threshold. That is the real,
-current false-negative behavior of this model, not a hypothetical caveat.
+**These numbers are lower than the previous 4-image-holdout numbers
+(mAP50 0.382) — that is expected, and is itself the honest result, not a
+regression to hide.** The old numbers came from a 4-image validation set,
+where a single right/wrong prediction swings the metric by 25 points -
+essentially noise dressed up as a percentage. These numbers come from 104
+held-out images the model never trained on, so they're a real (if still
+modest) measurement. `crack` (154 val instances, 1,449 train boxes)
+performs reasonably; `pothole` (17 val instances, only 185 train boxes -
+about an eighth of the crack boxes, since the Czech RDD2022 subset itself
+is crack-heavy) is measurably weaker. That class imbalance, not a training
+bug, is the main driver of the gap between the two per-class rows above.
+
+Detection throughput on the sample images is now measured by
+`backend/app/scoring/measure_impact.py` — see "Measurable impact" in
+`/README.md` for the current run's numbers, so this stays live rather than
+drifting stale.
 
 ### Known limitations (explicit, per project constraints)
 
-- **Dataset size**: 13 images total is far below what's needed for a
-  reliable detector. Precision/recall numbers above are not statistically
-  meaningful beyond "this pipeline runs and learns something" — a 4-image
-  validation set means a single wrong/right prediction swings the metric by
-  25 points.
+- **Class imbalance**: `pothole` has ~8x fewer training boxes than `crack`
+  in this dataset (both from RDD2022's own class distribution and the
+  original hand-labeled set), and it measurably underperforms as a result -
+  see the per-class table above. A follow-up should either oversample
+  pothole examples or pull from a second country's RDD2022 subset with a
+  different class balance.
 - **Class coverage**: `broken_curb` and `faded_marking` are undetectable by
-  the current fine-tuned model (0 training examples).
-- **Lighting/angle sensitivity**: all training images are daylight,
-  ground-level or slightly elevated phone/camera angles. Night, rain,
-  glare, or windshield-mounted dashcam angles are untested and likely to
-  perform worse.
-- **Geographic bias**: source photos are from varied real-world locations
-  (per SOURCES.md) but were not selected for Almaty-specific road/asphalt
-  characteristics - the demo's Almaty geography is illustrative seed data,
-  not evidence the detector was validated on Almaty roads.
-- **False positives**: not separately measured beyond the precision figures
-  above (precision ~0.29 already indicates a high false-positive rate at
-  this confidence threshold, given the small training set).
+  the current fine-tuned model (0 training examples, no clean RDD2022
+  equivalent for either).
+- **Lighting/angle sensitivity**: RDD2022's Czech images are dashcam-style
+  road-surface photos; the original 13 hand-labeled images are varied
+  phone/camera angles. Night, rain, and glare conditions are still
+  untested.
+- **Geographic bias**: training images are from the Czech Republic
+  (RDD2022) and varied real-world Wikimedia Commons locations - none from
+  Kazakhstan/Almaty specifically. The demo's Almaty geography is
+  illustrative seed data, not evidence the detector was validated on
+  Almaty roads or asphalt types.
+- **False positives**: precision ~0.29 overall (0.10 for pothole, 0.48 for
+  crack) directly quantifies the false-positive rate at the default 0.25
+  confidence threshold - still well below production-grade, honestly
+  reported rather than rounded up.
 
 ### Fallback behavior
 
@@ -112,12 +135,18 @@ fabricate a mapping — see `_map_class_name()`. The API surfaces this via
 
 ### What a production version would need
 
-- RDD2022 (India/Japan/Czech road damage, ~26k labeled images across the 4
-  target-adjacent classes) or an equivalent licensed dataset, fine-tuned for
-  many more epochs with a proper train/val/test split.
+- More of RDD2022 (this build uses 1,000 of ~26k available labeled images
+  across all six countries, Czech subset only) - scaling up to the full
+  release, balanced across classes and countries, with a proper
+  train/val/test split (this build's val set is still random-sampled from
+  the same distribution as train, not held out by e.g. country or capture
+  session).
 - Explicit `broken_curb` and `faded_marking` labeled examples - neither
-  exists in RDD2022's default taxonomy, so a custom or supplemented dataset
-  would be needed.
+  exists in RDD2022's taxonomy at all, so a custom or supplemented dataset
+  would be needed to ever detect them.
+- A fix for the `pothole` class imbalance (see "Known limitations" above) -
+  either oversampling or pulling pothole-heavy examples from another
+  RDD2022 country subset (India's is pothole-heavier per the dataset paper).
 - A held-out test set large enough to report precision/recall with
   meaningful confidence intervals, plus stratified analysis by
   lighting/weather/camera angle.
