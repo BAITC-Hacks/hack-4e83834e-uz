@@ -28,7 +28,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from app import models
-from app.config import DEFECT_CLASSES, SAMPLE_IMAGES_DIR, UPLOADS_DIR
+from app.config import SAMPLE_IMAGES_DIR, TRAINED_DEFECT_CLASSES, UPLOADS_DIR
 from app.database import Base, SessionLocal, engine
 from app.detection.detector import detect
 from app.scoring.traffic_sim import synthetic_daily_traffic
@@ -132,6 +132,10 @@ def seed() -> None:
         standin_photos = [f.name for f in UPLOADS_DIR.glob("*.jpg")] or [sample_images[0].name]
 
         # --- Synthetic defects (volume for a realistic-looking demo queue) -
+        # Only TRAINED_DEFECT_CLASSES are used here - broken_curb/faded_marking
+        # have zero real training images (see /model/README.md), so the demo
+        # never shows a defect class the detector can't actually find. Their
+        # area ranges stay defined below for when real training data exists.
         AREA_RANGES = {
             "pothole": (2.0, 20.0),
             "crack": (1.0, 15.0),
@@ -143,7 +147,7 @@ def seed() -> None:
 
         synthetic_defects: list[models.Defect] = []
         for _ in range(N_SYNTHETIC):
-            defect_class = rng.choice(DEFECT_CLASSES)
+            defect_class = rng.choice(TRAINED_DEFECT_CLASSES)
             segment = rng.choice(segments)
             lo, hi = AREA_RANGES[defect_class]
             area_pct = rng.uniform(lo, hi)

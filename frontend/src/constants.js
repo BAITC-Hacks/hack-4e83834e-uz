@@ -1,22 +1,48 @@
 // Fixed categorical order (never cycled/reassigned) - matches the validated
 // palette's slot order. Used anywhere a defect_class needs an identity color.
+// `label` is { en, ru } - read via i18n.jsx's `pick()` helper, since these
+// values also double as API filter params and shouldn't be duplicated.
+//
+// Only pothole/crack have real detector training data (see
+// /model/README.md) - DEFECT_TYPES (used for filter dropdowns and the seed
+// generator's implied class set) intentionally excludes broken_curb/
+// faded_marking so the demo never offers to filter on, or implies
+// detection of, a class the model can't currently find.
+// PLANNED_DEFECT_TYPES documents them without presenting them as live.
 export const DEFECT_TYPES = [
-  { value: "pothole", label: "Pothole", color: "var(--series-1)" },
-  { value: "crack", label: "Crack", color: "var(--series-2)" },
-  { value: "broken_curb", label: "Broken curb", color: "var(--series-3)" },
-  { value: "faded_marking", label: "Faded marking", color: "var(--series-4)" },
+  { value: "pothole", color: "var(--series-1)", label: { en: "Pothole", ru: "Выбоина" } },
+  { value: "crack", color: "var(--series-2)", label: { en: "Crack", ru: "Трещина" } },
 ];
 
-export const DEFECT_TYPE_MAP = Object.fromEntries(DEFECT_TYPES.map((t) => [t.value, t]));
+export const PLANNED_DEFECT_TYPES = [
+  { value: "broken_curb", color: "var(--series-3)", label: { en: "Broken curb", ru: "Повреждённый бордюр" } },
+  { value: "faded_marking", color: "var(--series-4)", label: { en: "Faded marking", ru: "Стёртая разметка" } },
+];
 
-export const DISTRICTS = ["Medeu", "Bostandyk", "Almaly", "Auezov", "Nauryzbay", "Turksib"];
+export const DEFECT_TYPE_MAP = Object.fromEntries(
+  [...DEFECT_TYPES, ...PLANNED_DEFECT_TYPES].map((t) => [t.value, t])
+);
+
+// `value` matches app/seed.py:DISTRICT_CENTERS keys exactly (used as the
+// API filter param and stored on RoadSegment.district) - `label` is display
+// only.
+export const DISTRICTS = [
+  { value: "Medeu", label: { en: "Medeu", ru: "Медеуский" } },
+  { value: "Bostandyk", label: { en: "Bostandyk", ru: "Бостандыкский" } },
+  { value: "Almaly", label: { en: "Almaly", ru: "Алмалинский" } },
+  { value: "Auezov", label: { en: "Auezov", ru: "Ауэзовский" } },
+  { value: "Nauryzbay", label: { en: "Nauryzbay", ru: "Наурызбайский" } },
+  { value: "Turksib", label: { en: "Turksib", ru: "Турксибский" } },
+];
+
+export const DISTRICT_LABEL_MAP = Object.fromEntries(DISTRICTS.map((d) => [d.value, d.label]));
 
 // Status colors are reserved semantic slots, never reused as series colors.
 export const STATUS_META = {
-  open: { label: "Open", color: "var(--text-muted)" },
-  scheduled: { label: "Scheduled", color: "var(--status-good)" },
-  rejected: { label: "Rejected", color: "var(--status-critical)" },
-  deferred: { label: "Deferred", color: "var(--status-warning)" },
+  open: { color: "var(--text-muted)", label: { en: "Open", ru: "Открыт" } },
+  scheduled: { color: "var(--status-good)", label: { en: "Scheduled", ru: "Запланирован" } },
+  rejected: { color: "var(--status-critical)", label: { en: "Rejected", ru: "Отклонён" } },
+  deferred: { color: "var(--status-warning)", label: { en: "Deferred", ru: "Отложен" } },
 };
 
 export const FACTOR_COLORS = {
@@ -26,9 +52,15 @@ export const FACTOR_COLORS = {
 };
 
 export const FACTOR_LABELS = {
-  severity: "Severity",
-  traffic: "Traffic",
-  repeat_reports: "Repeat reports",
+  severity: { en: "Severity", ru: "Серьёзность" },
+  traffic: { en: "Traffic", ru: "Трафик" },
+  repeat_reports: { en: "Repeat reports", ru: "Повторные обращения" },
+};
+
+export const ACTION_META = {
+  approve: { color: "var(--status-good)", label: { en: "Approved", ru: "Одобрено" } },
+  reject: { color: "var(--status-critical)", label: { en: "Rejected", ru: "Отклонено" } },
+  defer: { color: "var(--status-warning)", label: { en: "Deferred", ru: "Отложено" } },
 };
 
 export const API_BASE = "http://localhost:8000";

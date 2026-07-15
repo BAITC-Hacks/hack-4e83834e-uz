@@ -23,6 +23,16 @@ RANKER_MODEL_PATH = DATA_DIR / "ranker.joblib"
 
 DEFECT_CLASSES = ["pothole", "crack", "broken_curb", "faded_marking"]
 
+# Classes with real training images today (see /model/README.md - both the
+# hand-labeled set and the RDD2022 import only cover pothole/crack).
+# broken_curb and faded_marking stay in DEFECT_CLASSES above (matching the
+# model's fixed 4-class output head, so a future retrain with real data for
+# them doesn't require renumbering), but the seed generator and the
+# frontend's filter options only use TRAINED_DEFECT_CLASSES - so the demo
+# never shows a class the detector cannot currently detect. Treat the other
+# two as "planned," not "supported."
+TRAINED_DEFECT_CLASSES = ["pothole", "crack"]
+
 # Relative severity weight per defect class, used as a multiplier on the
 # severity sub-score. Rationale: a pothole is a safety/vehicle-damage hazard
 # and should dominate a faded lane marking, which is a lower-urgency cosmetic
