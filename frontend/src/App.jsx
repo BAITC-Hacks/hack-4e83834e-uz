@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { NavLink, Route, Routes } from "react-router-dom";
 import QueuePage from "./pages/QueuePage.jsx";
 import MapPage from "./pages/MapPage.jsx";
@@ -7,6 +8,9 @@ import { useLang } from "./i18n.jsx";
 
 function App() {
   const { t, lang, setLang } = useLang();
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
   return (
     <div className="app-shell">
       <header className="topbar">

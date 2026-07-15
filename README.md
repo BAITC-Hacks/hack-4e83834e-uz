@@ -2,10 +2,11 @@
 
 AI-assisted road defect detection & repair prioritization — a 2-week
 GovTech hackathon prototype. RoadWatch detects road infrastructure defects
-(potholes, cracks, broken curbs, faded lane markings) from photos and
-ranks them for a human maintenance analyst to review. **The AI only ranks
-and explains — a human always approves, rejects, or defers every item
-before anything is considered scheduled for repair.**
+(potholes and cracks today, real-time; broken curbs and faded lane
+markings are planned - see below) from photos and ranks them for a human
+maintenance analyst to review. **The AI only ranks and explains — a human
+always approves, rejects, or defers every item before anything is
+considered scheduled for repair.**
 
 ## Problem & users
 
@@ -33,7 +34,7 @@ Two judging questions this repo is built to answer directly:
   exactly the input noise a scoring model has to be robust to (see below).
 - **Prioritization under noisy, repeated, conflicting reports needs
   scoring, not a queue.** Multiple citizens report the same pothole with
-  different severity impressions; a arterial-road hairline crack and a
+  different severity impressions; an arterial-road hairline crack and a
   local-street pothole aren't comparable on any single raw field. Sorting
   by "report count" alone over-weights popular locations; sorting by
   "newest first" (a plain FIFO queue - what a non-AI system would default
@@ -139,10 +140,13 @@ uvicorn app.main:app --reload --port 8000
 
 The API is now at `http://localhost:8000` (interactive docs at `/docs`).
 
-If you skip the two `train` steps, the detector falls back to stock
-pretrained YOLOv8n (which has no road-defect classes and will report zero
-detections — see `model/README.md`) and the ranker falls back to the
-transparent weighted-sum scorer. The app still runs end-to-end either way.
+The committed weights/ranker (see "Out-of-the-box demo" above) mean you
+don't actually need to run the two `train` steps - they're shown here for
+completeness/reproducibility. If those weight files are ever deleted and
+not retrained, `detector.py` falls back to stock pretrained YOLOv8n (no
+road-defect classes, reports zero detections — see `model/README.md`) and
+`ranker_model.py` falls back to the transparent weighted-sum scorer. The
+app still runs end-to-end either way.
 
 Run tests: `pytest tests/` (from `backend/`, with `venv` active).
 
@@ -285,6 +289,8 @@ on this dataset.
 - [`model/README.md`](model/README.md) — model card
 - [`data/README.md`](data/README.md) — data sources, schema, synthetic
   generation logic
+- [`docker-compose.yml`](docker-compose.yml) — one-command deploy (see
+  [Docker deploy](#docker-deploy) above)
 
 ## Assumptions made while building (per "proceed with reasonable defaults")
 
