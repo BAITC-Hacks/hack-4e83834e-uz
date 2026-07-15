@@ -1,6 +1,6 @@
 # Demo video script (2-3 minutes)
 
-Target runtime: ~2:30. Screen-record the dashboard at `localhost:5173`
+Target runtime: ~3:00. Screen-record the dashboard at `localhost:5173`
 with the backend already seeded (`python -m app.seed`) so the queue/map/
 analytics aren't empty.
 
@@ -19,13 +19,15 @@ analytics aren't empty.
 
 **[0:15-0:45] Upload → detect → score**
 
-- Navigate to **Submit a report**.
+- Navigate to **Submit a report** (note the RU/EN toggle top-right - ru is
+  the default).
 - Pick a road segment, upload a real pothole photo.
-- Narrate while it processes: "This runs a YOLOv8 model fine-tuned on
-  hand-labeled pothole/crack photos - honestly, on a very small dataset for
-  this prototype, which we document openly in the model card."
+- Narrate while it processes: "This runs a YOLOv8 model fine-tuned on our
+  own hand-labeled photos plus a 1,000-image sample of RDD2022, an open
+  road-damage dataset - honest measured accuracy numbers are in the model
+  card, not rounded up."
 - Show the result panel: detected defect, thumbnail, and the generated
-  explanation sentence appearing.
+  explanation sentence appearing (in Russian by default).
 
 **[0:45-1:15] The ranked queue**
 
@@ -58,14 +60,27 @@ analytics aren't empty.
 - Navigate to **Analytics**: briefly show defects-by-type, by-district,
   trend-over-time, and the approve/reject/defer outcome chart.
 
-**[2:10-2:30] Close**
+**[2:10-2:40] Measurable impact + how to run it yourself**
+
+- Narrate: "This isn't just a UI - on the seeded demo data, the learned
+  ranker surfaces more of the highest-traffic-road defects into the top of
+  the queue than a plain chronological, no-AI ordering would. Those
+  numbers, and detection throughput, are computed by a script in the repo
+  (`measure_impact.py`), not made up - see the README's Measurable impact
+  section."
+- Mention: "`docker compose up` builds and runs the whole stack - backend,
+  frontend, seeded data - from a fresh clone, no manual setup steps."
+
+**[2:40-3:00] Close**
 
 > "Everything here is documented honestly - the detection model's real
-> (small) accuracy numbers, exactly which parts of the traffic and
-> repeat-report data are synthetic and why, and the full architecture -
-> all in the repo's README and /docs. RoadWatch is a two-week hackathon
-> prototype, not a production system, but the pipeline - detection,
-> learned prioritization, explainability, and mandatory human approval -
-> is real and runs end-to-end today."
+> accuracy numbers, exactly which parts of the traffic and repeat-report
+> data are synthetic and why, and the full architecture - all in the
+> repo's README and /docs. RoadWatch is a two-week hackathon prototype,
+> not a production system, but the pipeline - real detection on an open
+> dataset, learned prioritization designed to retrain on real analyst
+> decisions, explainability in Russian and English, and mandatory human
+> approval - is real and runs end-to-end today, from one `docker compose
+> up`."
 
 *(End card: repo link / team name.)*

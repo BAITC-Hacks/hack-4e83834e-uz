@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+**/__pycache__/
+.pytest_cache/
+*.pyc
+data/roadwatch.db
+data/uploads/
+data/weights/runs/
+data/detect_dataset/images/*/rdd2022_*.jpg
+data/detect_dataset/labels/*/rdd2022_*.txt
+data/detect_dataset/labels/*.cache

@@ -95,7 +95,8 @@ or reads existing ones.
 | `app/scoring/repeat_reports.py` | Time-decayed repeat-report clustering |
 | `app/scoring/features.py` | Assembles the 3-factor feature vector |
 | `app/scoring/weighted_model.py` | Transparent weighted-sum scorer |
-| `app/scoring/train_ranker.py` | Trains the LogisticRegression ranker on a documented synthetic labeled set |
+| `app/scoring/train_ranker.py` | Trains the LogisticRegression ranker - synthetic labeled set by default, or real `ApprovalLog` decisions via `--from-approvals` once enough exist |
+| `app/scoring/measure_impact.py` | Computes real, measured "Measurable impact" numbers from the seeded database (see `/README.md`) |
 | `app/scoring/ranker_model.py` | Loads the ranker, scores defects, computes coefficient-based breakdown |
 | `app/scoring/explain.py` | Turns score + features into the analyst-facing explanation string |
 | `app/routers/*.py` | FastAPI endpoints (defects, reports, queue, reviews, analytics, segments) |
@@ -113,3 +114,4 @@ or reads existing ones.
 | `components/DefectDetailModal.jsx` | Photo + bbox overlay, score breakdown, explanation, review actions |
 | `components/ReviewActions.jsx` | Approve/Reject/Defer form (reviewer name required) |
 | `api.js` | Thin axios wrapper over the FastAPI backend |
+| `i18n.jsx` | ru/en lang toggle (ru default) - UI copy strings; per-value labels (defect type/status/district/factor) live in `constants.js` as `{en, ru}` pairs |
