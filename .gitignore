@@ -1,0 +1,21 @@
+# Python
+backend/venv/
+__pycache__/
+*.pyc
+**/.pytest_cache/
+
+# Data / model artifacts (regenerate via seed.py / train.py / train_ranker.py)
+backend/data/roadwatch.db
+backend/data/uploads/
+backend/data/weights/*.pt
+backend/data/weights/runs/
+backend/data/ranker.joblib
+backend/data/detect_dataset/labels/*.cache
+backend/runs/
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+
+# OS
+.DS_Store

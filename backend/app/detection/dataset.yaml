@@ -1,0 +1,12 @@
+# YOLOv8 dataset spec for the tiny RoadWatch fine-tuning set.
+# See /backend/data/detect_dataset/ANNOTATIONS.md for how these boxes were produced
+# and /model/README.md for honest limitations of a model trained on this few images.
+path: /Users/dimash/Documents/roadwatch/backend/data/detect_dataset
+train: images/train
+val: images/val
+
+names:
+  0: pothole
+  1: crack
+  2: broken_curb
+  3: faded_marking
