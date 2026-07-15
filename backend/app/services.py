@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app import models, schemas
 from app.config import UPLOADS_DIR
-from app.scoring.explain import generate_explanation
+from app.scoring.explain import generate_explanation, generate_explanation_ru
 from app.scoring.features import DefectFeatures
 from app.scoring.ranker_model import score as ranker_score
 
@@ -38,6 +38,7 @@ def build_defect_out(db: Session, defect: models.Defect, rank: int | None = None
     priority, breakdown, scorer_used = ranker_score(features)
     num_reports = len(defect.reports) or 1  # the detection itself counts as the first observation
     explanation = generate_explanation(rank or 1, features, num_reports)
+    explanation_ru = generate_explanation_ru(rank or 1, features, num_reports)
 
     image_name = defect.image_path
     image_url = f"/media/{image_name}"
@@ -58,6 +59,7 @@ def build_defect_out(db: Session, defect: models.Defect, rank: int | None = None
         scorer_used=scorer_used,
         score_breakdown_pct=schemas.ScoreBreakdown(**breakdown),
         explanation=explanation,
+        explanation_ru=explanation_ru,
         approval_logs=[schemas.ApprovalLogOut.model_validate(a) for a in defect.approval_logs],
     )
 

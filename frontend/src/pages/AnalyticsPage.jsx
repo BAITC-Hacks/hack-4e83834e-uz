@@ -12,7 +12,8 @@ import {
   YAxis,
 } from "recharts";
 import { api } from "../api";
-import { DEFECT_TYPE_MAP, STATUS_META } from "../constants";
+import { ACTION_META, DEFECT_TYPE_MAP, DISTRICT_LABEL_MAP } from "../constants";
+import { useLang } from "../i18n.jsx";
 
 const tooltipStyle = {
   background: "var(--surface-2)",
@@ -22,13 +23,8 @@ const tooltipStyle = {
   color: "var(--text-primary)",
 };
 
-const ACTION_META = {
-  approve: { label: "Approved", color: "var(--status-good)" },
-  reject: { label: "Rejected", color: "var(--status-critical)" },
-  defer: { label: "Deferred", color: "var(--status-warning)" },
-};
-
 export default function AnalyticsPage() {
+  const { t, pick } = useLang();
   const [summary, setSummary] = useState(null);
   const [byType, setByType] = useState([]);
   const [byDistrict, setByDistrict] = useState([]);
@@ -45,27 +41,33 @@ export default function AnalyticsPage() {
 
   return (
     <div>
-      <h1 className="page-title">Analytics</h1>
-      <p className="page-subtitle">City-wide view of defect volume, mix, and the human review workflow.</p>
+      <h1 className="page-title">{t("analytics_title")}</h1>
+      <p className="page-subtitle">{t("analytics_subtitle")}</p>
 
       {summary && (
         <div className="stat-row">
-          <StatTile label="Total defects" value={summary.total_defects} />
-          <StatTile label="Open" value={summary.open} />
-          <StatTile label="Scheduled" value={summary.scheduled} color="var(--status-good)" />
-          <StatTile label="Rejected" value={summary.rejected} color="var(--status-critical)" />
-          <StatTile label="Deferred" value={summary.deferred} color="var(--status-warning)" />
+          <StatTile label={t("stat_total")} value={summary.total_defects} />
+          <StatTile label={t("stat_open")} value={summary.open} />
+          <StatTile label={t("stat_scheduled")} value={summary.scheduled} color="var(--status-good)" />
+          <StatTile label={t("stat_rejected")} value={summary.rejected} color="var(--status-critical)" />
+          <StatTile label={t("stat_deferred")} value={summary.deferred} color="var(--status-warning)" />
         </div>
       )}
 
       <div className="grid-2">
         <div className="card chart-card">
-          <h3>Defects by type</h3>
-          <p className="chart-caption">Count of open + reviewed defects per defect class.</p>
+          <h3>{t("chart_by_type_title")}</h3>
+          <p className="chart-caption">{t("chart_by_type_caption")}</p>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={byType} margin={{ left: -18, top: 16 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--gridline)" vertical={false} />
-              <XAxis dataKey="defect_class" tick={{ fontSize: 11, fill: "var(--text-muted)" }} tickLine={false} axisLine={{ stroke: "var(--baseline)" }} />
+              <XAxis
+                dataKey="defect_class"
+                tickFormatter={(v) => pick(DEFECT_TYPE_MAP[v]?.label) || v}
+                tick={{ fontSize: 11, fill: "var(--text-muted)" }}
+                tickLine={false}
+                axisLine={{ stroke: "var(--baseline)" }}
+              />
               <YAxis tick={{ fontSize: 11, fill: "var(--text-muted)" }} tickLine={false} axisLine={false} allowDecimals={false} />
               <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--surface-2)" }} />
               <Bar dataKey="count" radius={[4, 4, 0, 0]} label={{ position: "top", fontSize: 11, fill: "var(--text-secondary)" }}>
@@ -78,12 +80,18 @@ export default function AnalyticsPage() {
         </div>
 
         <div className="card chart-card">
-          <h3>Defects by district</h3>
-          <p className="chart-caption">Count of defects per Almaty district (illustrative demo geography).</p>
+          <h3>{t("chart_by_district_title")}</h3>
+          <p className="chart-caption">{t("chart_by_district_caption")}</p>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={byDistrict} margin={{ left: -18 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--gridline)" vertical={false} />
-              <XAxis dataKey="district" tick={{ fontSize: 11, fill: "var(--text-muted)" }} tickLine={false} axisLine={{ stroke: "var(--baseline)" }} />
+              <XAxis
+                dataKey="district"
+                tickFormatter={(v) => pick(DISTRICT_LABEL_MAP[v]) || v}
+                tick={{ fontSize: 11, fill: "var(--text-muted)" }}
+                tickLine={false}
+                axisLine={{ stroke: "var(--baseline)" }}
+              />
               <YAxis tick={{ fontSize: 11, fill: "var(--text-muted)" }} tickLine={false} axisLine={false} allowDecimals={false} />
               <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--surface-2)" }} />
               <Bar dataKey="count" fill="var(--series-1)" radius={[4, 4, 0, 0]} />
@@ -94,8 +102,8 @@ export default function AnalyticsPage() {
 
       <div className="grid-2">
         <div className="card chart-card">
-          <h3>Defects reported over time</h3>
-          <p className="chart-caption">New defects created per day.</p>
+          <h3>{t("chart_trend_title")}</h3>
+          <p className="chart-caption">{t("chart_trend_caption")}</p>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={trend} margin={{ left: -18 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--gridline)" vertical={false} />
@@ -108,8 +116,8 @@ export default function AnalyticsPage() {
         </div>
 
         <div className="card chart-card">
-          <h3>Human review outcomes</h3>
-          <p className="chart-caption">How analysts have resolved reviewed defects so far.</p>
+          <h3>{t("chart_funnel_title")}</h3>
+          <p className="chart-caption">{t("chart_funnel_caption")}</p>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={funnel} layout="vertical" margin={{ left: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--gridline)" horizontal={false} />
@@ -117,7 +125,7 @@ export default function AnalyticsPage() {
               <YAxis
                 type="category"
                 dataKey="action"
-                tickFormatter={(v) => ACTION_META[v]?.label || v}
+                tickFormatter={(v) => pick(ACTION_META[v]?.label) || v}
                 tick={{ fontSize: 11, fill: "var(--text-muted)" }}
                 tickLine={false}
                 axisLine={{ stroke: "var(--baseline)" }}

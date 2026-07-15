@@ -73,6 +73,32 @@ a {
   box-shadow: 0 0 0 1px var(--border);
 }
 
+.lang-toggle {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+.lang-toggle button {
+  border: none;
+  background: transparent;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.lang-toggle button.active {
+  background: var(--surface-1);
+  color: var(--text-primary);
+  box-shadow: 0 0 0 1px var(--border);
+}
+
 .main-content {
   flex: 1;
   padding: 20px 24px 48px;

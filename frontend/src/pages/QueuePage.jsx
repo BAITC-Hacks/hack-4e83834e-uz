@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { api, mediaUrl } from "../api";
 import { DEFECT_TYPE_MAP } from "../constants";
+import { useLang } from "../i18n.jsx";
 import FilterBar from "../components/FilterBar.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
 import DefectDetailModal from "../components/DefectDetailModal.jsx";
 
 export default function QueuePage() {
+  const { t, lang, pick } = useLang();
   const [filters, setFilters] = useState({ status: "open" });
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,17 +34,14 @@ export default function QueuePage() {
 
   return (
     <div>
-      <h1 className="page-title">Repair priority queue</h1>
-      <p className="page-subtitle">
-        Ranked by the learned priority model (severity + traffic + repeat reports). Nothing here is scheduled until
-        a human analyst approves it.
-      </p>
+      <h1 className="page-title">{t("queue_title")}</h1>
+      <p className="page-subtitle">{t("queue_subtitle")}</p>
       <FilterBar filters={filters} onChange={setFilters} />
 
       {loading ? (
-        <div className="empty-state">Loading…</div>
+        <div className="empty-state">{t("loading")}</div>
       ) : items.length === 0 ? (
-        <div className="card empty-state">No defects match these filters.</div>
+        <div className="card empty-state">{t("no_defects_match")}</div>
       ) : (
         <div className="queue-list">
           {items.map(({ rank, defect }) => {
@@ -54,14 +53,14 @@ export default function QueuePage() {
                 <div className="queue-main">
                   <div className="queue-title-row">
                     <span className="type-dot" style={{ background: typeMeta?.color }} />
-                    {typeMeta?.label || defect.defect_class}
+                    {pick(typeMeta?.label) || defect.defect_class}
                     <StatusBadge status={defect.status} />
                   </div>
-                  <div className="queue-sub">{defect.explanation}</div>
+                  <div className="queue-sub">{lang === "ru" ? defect.explanation_ru : defect.explanation}</div>
                 </div>
                 <div className="queue-score">
                   <div className="queue-score-value">{(defect.priority_score * 100).toFixed(0)}</div>
-                  <div className="queue-score-label">priority</div>
+                  <div className="queue-score-label">{t("priority")}</div>
                 </div>
               </div>
             );

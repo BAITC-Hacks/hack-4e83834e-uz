@@ -45,6 +45,8 @@ def submit_report(
             defect=None,
             message="No defect could be automatically detected in this photo. "
                     "It has not been added to the queue - try a clearer, closer photo of the defect.",
+            message_ru="Не удалось автоматически распознать дефект на этом фото. "
+                       "Оно не добавлено в очередь - попробуйте более чёткое и близкое фото дефекта.",
         )
 
     best = max(detections, key=lambda d: d.confidence)
@@ -72,6 +74,7 @@ def submit_report(
             detections_found=len(detections),
             defect=services.build_defect_out(db, existing),
             message="Matched to an existing open defect at this location - added as a repeat report.",
+            message_ru="Совпало с уже открытым дефектом на этом месте - добавлено как повторное обращение.",
         )
 
     defect = models.Defect(
@@ -97,4 +100,5 @@ def submit_report(
         detections_found=len(detections),
         defect=services.build_defect_out(db, defect),
         message="New defect created from this report.",
+        message_ru="Создан новый дефект по этому обращению.",
     )

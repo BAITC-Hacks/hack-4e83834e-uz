@@ -1,9 +1,11 @@
 import { CircleMarker, MapContainer, Popup, TileLayer } from "react-leaflet";
 import { DEFECT_TYPE_MAP, STATUS_META } from "../constants";
+import { useLang } from "../i18n.jsx";
 
 const ALMATY_CENTER = [43.222, 76.92];
 
 export default function MapView({ defects, onSelect }) {
+  const { t, pick } = useLang();
   return (
     <MapContainer center={ALMATY_CENTER} zoom={11} style={{ height: "100%", width: "100%", borderRadius: 10 }}>
       <TileLayer
@@ -24,17 +26,17 @@ export default function MapView({ defects, onSelect }) {
           >
             <Popup>
               <div style={{ fontSize: 13 }}>
-                <b>{typeMeta?.label || defect.defect_class}</b> · {STATUS_META[defect.status]?.label}
+                <b>{pick(typeMeta?.label) || defect.defect_class}</b> · {pick(STATUS_META[defect.status]?.label)}
                 <br />
                 {defect.segment.name}
                 <br />
-                Priority: {(defect.priority_score * 100).toFixed(0)} / 100
+                {t("priority_score_label")}: {(defect.priority_score * 100).toFixed(0)} / 100
                 <br />
                 <button
                   style={{ marginTop: 6, cursor: "pointer" }}
                   onClick={() => onSelect(defect)}
                 >
-                  View details
+                  {t("view_details")}
                 </button>
               </div>
             </Popup>

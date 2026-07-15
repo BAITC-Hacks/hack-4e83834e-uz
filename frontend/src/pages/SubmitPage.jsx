@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { api, mediaUrl } from "../api";
-import { DEFECT_TYPE_MAP } from "../constants";
+import { DEFECT_TYPE_MAP, DISTRICT_LABEL_MAP } from "../constants";
+import { useLang } from "../i18n.jsx";
 
 export default function SubmitPage() {
+  const { t, lang, pick } = useLang();
   const [segments, setSegments] = useState([]);
   const [segmentId, setSegmentId] = useState("");
   const [note, setNote] = useState("");
@@ -40,7 +42,7 @@ export default function SubmitPage() {
       const res = await api.submitReport(form);
       setResult(res);
     } catch (e) {
-      setError(e?.response?.data?.detail || "Submission failed - please try again.");
+      setError(e?.response?.data?.detail || t("submit_failed"));
     } finally {
       setSubmitting(false);
     }
@@ -48,26 +50,23 @@ export default function SubmitPage() {
 
   return (
     <div>
-      <h1 className="page-title">Report a road defect</h1>
-      <p className="page-subtitle">
-        Citizen submission form. Upload a photo of a pothole, crack, broken curb, or faded lane marking near you -
-        RoadWatch will detect it automatically and add it to the analyst's review queue.
-      </p>
+      <h1 className="page-title">{t("submit_title")}</h1>
+      <p className="page-subtitle">{t("submit_subtitle")}</p>
 
       <div className="grid-2">
         <form className="card" style={{ padding: 18 }} onSubmit={handleSubmit}>
           <div className="form-field">
-            <label>Road segment / nearest street</label>
+            <label>{t("submit_segment_label")}</label>
             <select value={segmentId} onChange={(e) => setSegmentId(e.target.value)}>
               {segments.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {s.name} — {s.district}
+                  {s.name} — {pick(DISTRICT_LABEL_MAP[s.district]) || s.district}
                 </option>
               ))}
             </select>
           </div>
           <div className="form-field">
-            <label>Photo</label>
+            <label>{t("submit_photo_label")}</label>
             <input type="file" accept="image/*" onChange={handleFile} required />
           </div>
           {preview && (
@@ -76,27 +75,22 @@ export default function SubmitPage() {
             </div>
           )}
           <div className="form-field">
-            <label>Note (optional)</label>
-            <textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Anything else worth mentioning?" />
+            <label>{t("submit_note_label")}</label>
+            <textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("submit_note_placeholder")} />
           </div>
           <button className="btn btn-primary" type="submit" disabled={submitting || !file}>
-            {submitting ? "Submitting…" : "Submit report"}
+            {submitting ? t("submit_button_busy") : t("submit_button")}
           </button>
           {error && <div className="callout callout-error">{error}</div>}
         </form>
 
         <div className="card" style={{ padding: 18 }}>
-          <h3 style={{ marginTop: 0, fontSize: 14 }}>What happens next</h3>
-          <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>
-            RoadWatch runs the same YOLOv8 detector used for inspection photos. If a defect is found, it's either
-            added as a brand-new item in the analyst queue, or - if it matches an existing open report at this
-            location - counted as a repeat report, which raises its priority. Your photo never causes a repair crew
-            to be dispatched automatically; a human analyst always makes that call.
-          </p>
+          <h3 style={{ marginTop: 0, fontSize: 14 }}>{t("submit_next_title")}</h3>
+          <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>{t("submit_next_body")}</p>
 
           {result && (
             <div className={`callout ${result.defect ? "callout-success" : "callout-error"}`}>
-              {result.message}
+              {lang === "ru" ? result.message_ru : result.message}
             </div>
           )}
 
@@ -107,9 +101,9 @@ export default function SubmitPage() {
               </div>
               <div className="queue-title-row">
                 <span className="type-dot" style={{ background: DEFECT_TYPE_MAP[result.defect.defect_class]?.color }} />
-                {DEFECT_TYPE_MAP[result.defect.defect_class]?.label || result.defect.defect_class}
+                {pick(DEFECT_TYPE_MAP[result.defect.defect_class]?.label) || result.defect.defect_class}
               </div>
-              <div className="explanation-box">{result.defect.explanation}</div>
+              <div className="explanation-box">{lang === "ru" ? result.defect.explanation_ru : result.defect.explanation}</div>
             </div>
           )}
         </div>

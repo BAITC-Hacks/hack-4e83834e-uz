@@ -49,6 +49,7 @@ class DefectOut(BaseModel):
     scorer_used: str
     score_breakdown_pct: ScoreBreakdown
     explanation: str
+    explanation_ru: str
 
     approval_logs: list[ApprovalLogOut] = []
 
@@ -80,3 +81,4 @@ class ReportSubmitResult(BaseModel):
     detections_found: int
     defect: DefectOut | None
     message: str
+    message_ru: str
