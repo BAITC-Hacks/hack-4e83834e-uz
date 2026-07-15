@@ -143,10 +143,37 @@ repeat-reports 20%, hand-set weights) is kept as a transparent, always-
 available baseline and fallback, but the queue is ranked by the
 logistic-regression ranker.
 
-### Training data — also synthetic, also documented
+### This is designed to be retrained on real decisions, not just synthetic ones
 
-We do not have a real historical log of analyst approve/reject decisions
-(greenfield prototype). `train_ranker.py` generates a synthetic labeled set:
+Every human decision made through `POST /defects/{id}/review` is already
+written to the `ApprovalLog` table (`action`, `reviewer_name`,
+`decided_at` - see `/README.md`'s "Human-in-the-loop workflow"). That is
+real, structurally-guaranteed training data the moment it exists, and
+`train_ranker.py --from-approvals` retrains directly on it:
+
+```
+cd backend && source venv/bin/activate && python -m app.scoring.train_ranker --from-approvals
+```
+
+Each `ApprovalLog` row becomes one training example: the defect's feature
+vector *as it would have looked at decision time* (repeat-report ages are
+computed relative to `decided_at`, not "now"), labeled `1` for `approve`
+and `0` for `reject`/`defer`. If fewer than `MIN_REAL_SAMPLES` (30) such
+rows exist yet, the command prints an explicit warning and falls back to
+the synthetic generator below - the fallback is never silent, and the
+saved model records which happened in `trained_on`
+(`real-approvals` / `synthetic` / `synthetic-fallback`, see
+`ranker.joblib`'s metadata). A freshly-seeded demo (`python -m app.seed`)
+only creates 8 pre-reviewed defects, well under that floor, so today's
+committed `ranker.joblib` is trained on the synthetic set below - but the
+retraining path onto real analyst decisions is implemented and tested
+(`backend/tests/test_ranker_training.py`), not just described as a "next
+step."
+
+### Training data (current default) — synthetic, fully documented
+
+Until enough real `ApprovalLog` rows accumulate, `train_ranker.py`
+generates a synthetic labeled set instead:
 
 1. Sample 400 feature vectors `(severity, traffic, repeat_reports)`
    uniformly over `[0,1]^3`.
@@ -160,6 +187,10 @@ We do not have a real historical log of analyst approve/reject decisions
 This means the model has to recover the underlying severity > traffic >
 repeat-reports pattern *through noise*, rather than memorizing a
 deterministic formula - the actual point of using a learned model here.
+We're explicit that this synthetic prior shares its weighting with the
+transparent baseline (that's what makes the two scorers comparable); it is
+the `--from-approvals` path above, not this synthetic set, that removes
+any circularity once real decisions exist.
 
 ### Measured results (25% held-out synthetic test set, n=100)
 
@@ -190,8 +221,9 @@ explanation.
 
 ### What a production version would need
 
-A real dataset of analyst decisions (approve/reject/defer, with reviewer
-identity and timestamp - which this prototype already logs via
-`ApprovalLog`) collected over weeks/months of actual use, retrained
-periodically. The synthetic-label approach here is a placeholder that
-demonstrates the mechanism, not a claim about real analyst behavior.
+Weeks/months of real analyst decisions collected via `ApprovalLog` (already
+logged today) past the `MIN_REAL_SAMPLES` floor, then periodic
+`--from-approvals` retraining - both mechanisms already exist (see above);
+what's missing is simply usage volume. The synthetic-label approach
+remains the fallback while that data accumulates, not a claim about real
+analyst behavior.

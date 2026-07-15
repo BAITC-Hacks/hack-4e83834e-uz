@@ -80,6 +80,9 @@ pip install -r requirements.txt
 # hand-labeled sample set, and train the priority ranker:
 python -m app.detection.train
 python -m app.scoring.train_ranker
+# Once enough real analyst decisions exist in ApprovalLog (see
+# model/README.md), retrain the ranker on them instead of synthetic labels:
+python -m app.scoring.train_ranker --from-approvals
 
 # Seed demo data (24 road segments, defects from real detection on the
 # sample images + synthetic volume, repeat reports, a few pre-reviewed

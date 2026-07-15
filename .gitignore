@@ -7,11 +7,17 @@ __pycache__/
 # Data / model artifacts (regenerate via seed.py / train.py / train_ranker.py)
 backend/data/roadwatch.db
 backend/data/uploads/
-backend/data/weights/*.pt
 backend/data/weights/runs/
-backend/data/ranker.joblib
 backend/data/detect_dataset/labels/*.cache
 backend/runs/
+
+# RDD2022-derived training images/labels are reproducible via
+# scripts/fetch_rdd2022.sh + scripts/convert_rdd2022.py (deterministic,
+# seed=7) - not committed to keep repo size down. The 13 original
+# hand-labeled images/labels are NOT matched by this pattern and stay
+# tracked, same as before.
+backend/data/detect_dataset/images/*/rdd2022_*.jpg
+backend/data/detect_dataset/labels/*/rdd2022_*.txt
 
 # Node / frontend
 frontend/node_modules/
