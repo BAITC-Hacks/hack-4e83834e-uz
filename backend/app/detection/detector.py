@@ -13,6 +13,7 @@ pipeline demonstration purposes, not production accuracy.
 """
 from __future__ import annotations
 
+import logging
 import threading
 from dataclasses import dataclass
 from pathlib import Path
@@ -20,7 +21,9 @@ from typing import List
 
 from ultralytics import YOLO
 
-from app.config import DEFECT_CLASSES, FINE_TUNED_WEIGHTS, PRETRAINED_WEIGHTS
+from app.config import DEFECT_CLASSES, FINE_TUNED_WEIGHTS, NON_DEFECT_CLASSES, PRETRAINED_WEIGHTS
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -96,8 +99,18 @@ def _map_class_name(raw_name: str, source: str) -> str | None:
     a genuine defect classification - so we deliberately return None and
     let the caller treat that frame as "no defects detected" rather than
     fabricate a mapping from unrelated COCO classes (car, person, etc).
+
+    `manhole` is a real trained class (see /model/README.md's Arcioni et al.
+    dataset section) but is deliberately NOT a defect - it exists in the
+    training data specifically to teach the model to tell manholes apart
+    from potholes, not to be surfaced to analysts. Recognize it explicitly
+    (log it) and discard it, rather than let it fall through indistinguishably
+    from a genuinely unrecognized class name.
     """
     if source == "roadwatch-finetuned":
+        if raw_name in NON_DEFECT_CLASSES:
+            logger.info("Discarding non-defect detection: class=%s", raw_name)
+            return None
         return raw_name if raw_name in DEFECT_CLASSES else None
     return None
 

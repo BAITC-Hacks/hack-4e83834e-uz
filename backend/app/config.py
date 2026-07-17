@@ -23,6 +23,14 @@ RANKER_MODEL_PATH = DATA_DIR / "ranker.joblib"
 
 DEFECT_CLASSES = ["pothole", "crack", "broken_curb", "faded_marking"]
 
+# Trained classes the detector can output but that are deliberately NOT
+# defects (see /model/README.md's Arcioni et al. dataset section). Manhole
+# covers exist in that dataset's own taxonomy specifically so the detector
+# learns to tell them apart from potholes instead of false-positiving on
+# them - detector.py recognizes and discards manhole detections rather than
+# ever turning one into a Defect row.
+NON_DEFECT_CLASSES = ["manhole"]
+
 # Classes with real training images today (see /model/README.md - both the
 # hand-labeled set and the RDD2022 import only cover pothole/crack).
 # broken_curb and faded_marking stay in DEFECT_CLASSES above (matching the

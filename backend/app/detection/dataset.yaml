@@ -15,3 +15,7 @@ names:
   1: crack
   2: broken_curb
   3: faded_marking
+  4: manhole  # trained class, but NOT a defect - see app/config.py's
+             # NON_DEFECT_CLASSES and detector.py's _map_class_name(),
+             # which recognizes and discards manhole detections rather
+             # than ever creating a Defect row for one.

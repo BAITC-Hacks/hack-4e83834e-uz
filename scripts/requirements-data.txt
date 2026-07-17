@@ -1,0 +1,10 @@
+# Extra dependencies for one-off dataset-fetching scripts under scripts/.
+#
+# Deliberately kept separate from backend/requirements.txt: kagglehub is
+# only needed to *download* training data (scripts/fetch_arcioni.sh), never
+# at API/detection runtime, so it shouldn't bloat the deployed backend's
+# dependency set.
+#
+# Install with:
+#   pip install -r scripts/requirements-data.txt
+kagglehub==1.0.2
