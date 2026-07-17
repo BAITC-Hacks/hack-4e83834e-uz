@@ -124,6 +124,61 @@ drifting stale.
   confidence threshold - still well below production-grade, honestly
   reported rather than rounded up.
 
+### Second dataset (Arcioni et al.) — planned to fix the pothole imbalance, not yet merged
+
+The pothole class imbalance above (185 train boxes, mAP50 0.089) has an
+identified fix: **"Road Damage Dataset: Potholes, Cracks and Manholes"**
+(Giordani, Arcioni, Gil-Martín, Marini — Sapienza University of Rome /
+Universidad Politécnica de Madrid — *Scientific Reports*, 2026; Zenodo DOI
+[10.5281/zenodo.17834373](https://doi.org/10.5281/zenodo.17834373); Kaggle
+mirror `lorenzoarcioni/road-damage-dataset-potholes-cracks-and-manholes`).
+2,009 images (640×360, GoPro HERO7 + Samsung Galaxy A14, Rome/Sacrofano,
+Italy), YOLO-format labels, 1,261 pothole boxes / 2,519 crack boxes / 957
+manhole boxes. **License: CC BY 4.0** (per the Zenodo record's own
+metadata — verify at the DOI link above before relying on this, license
+terms on hosted datasets can change between versions). **Required
+citation**: Giordani, E., Arcioni, L., Gil-Martín, M., Marini, M.R. (2026).
+Road Damage Dataset: Potholes, Cracks and Manholes. *Scientific Reports*.
+
+**Why it's the right fix**: it adds ~1,261 real pothole boxes (~7x this
+project's current 185), directly targeting the weakest class, and its
+`manhole` class exists specifically so a detector learns to distinguish
+manhole covers from potholes instead of false-positiving on them — see
+`app/config.py`'s `NON_DEFECT_CLASSES` and `detector.py`'s
+`_map_class_name()`, which already recognize and discard `manhole`
+detections (a trained class, never a `Defect` row) — tested in
+`backend/tests/test_detector.py`.
+
+**Status: fetch/convert scripts written and tested, dataset not yet
+downloaded, model not yet retrained on it.** `scripts/fetch_arcioni.sh`
+(kagglehub primary path, direct-Zenodo fallback) and
+`scripts/convert_arcioni.py` (YOLO-polygon-to-bbox conversion, class
+mapping, deterministic seed=7 90/10 split, merged per-class summary) are
+both committed and were validated against real data — the archive's exact
+on-disk annotation format was confirmed by fetching its central directory
+and a handful of individual label files via HTTP Range requests directly
+against the real Zenodo-hosted zip (not assumed from the paper's prose;
+see `convert_arcioni.py`'s module docstring), and `convert_arcioni.py`'s
+conversion logic is regression-tested against those real label lines in
+`backend/tests/test_convert_arcioni.py`. The full ~193MB archive itself
+could not be downloaded in this environment (transfers were cut off
+partway by the sandbox's network, repeatedly, well short of completion) —
+so the actual merge into `backend/data/detect_dataset/` and a retrain on
+the combined set have **not** run yet. `dataset.yaml` already declares the
+new `manhole` class (index 4) so this is a drop-in next step once the
+archive can be fetched: `./scripts/fetch_arcioni.sh && python3
+scripts/convert_arcioni.py --raw-dir <out_dir>/extracted && python -m
+app.detection.train`. The currently committed `roadwatch_ft.pt` and the
+measured results table above are **unchanged** — no retrain was performed
+for this update, per this project's constraint that adding a dataset must
+never block the demo on an incomplete training run.
+
+Once merged, expect **no improvement to the geographic-bias limitation**:
+Rome/Sacrofano, Italy is a third distinct region alongside Czech Republic
+(RDD2022) and varied worldwide Wikimedia Commons locations — none of the
+three are Kazakhstan/Almaty, so this remains an open caveat even after the
+merge, not one it resolves.
+
 ### Fallback behavior
 
 If `roadwatch_ft.pt` doesn't exist (e.g. a fresh clone before running
@@ -145,8 +200,10 @@ fabricate a mapping — see `_map_class_name()`. The API surfaces this via
   exists in RDD2022's taxonomy at all, so a custom or supplemented dataset
   would be needed to ever detect them.
 - A fix for the `pothole` class imbalance (see "Known limitations" above) -
-  either oversampling or pulling pothole-heavy examples from another
-  RDD2022 country subset (India's is pothole-heavier per the dataset paper).
+  either oversampling, pulling pothole-heavy examples from another RDD2022
+  country subset (India's is pothole-heavier per the dataset paper), or
+  completing the Arcioni et al. merge described above (scripts ready,
+  archive not yet downloaded in this environment).
 - A held-out test set large enough to report precision/recall with
   meaningful confidence intervals, plus stratified analysis by
   lighting/weather/camera angle.

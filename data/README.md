@@ -47,6 +47,27 @@ README).
   (`backend/data/weights/roadwatch_ft.pt`) **are** committed - see
   "Out-of-the-box demo" in `/README.md`.
 
+**c) A planned third source, not yet merged**: "Road Damage Dataset:
+Potholes, Cracks and Manholes" (Giordani, Arcioni, Gil-Martín, Marini,
+*Scientific Reports* 2026; Zenodo DOI
+[10.5281/zenodo.17834373](https://doi.org/10.5281/zenodo.17834373); CC BY
+4.0), 2,009 images / 1,261 pothole / 2,519 crack / 957 manhole boxes,
+collected around Rome and Sacrofano, Italy. Targets this dataset's own
+weakest point - `pothole` has only 185 training boxes today (see
+`/model/README.md`'s per-class results) - and adds a new `manhole` class
+specifically so the detector learns to tell manhole covers apart from
+potholes rather than confuse them (manhole is a trained class but is never
+surfaced as a `Defect` - see `app/config.py`'s `NON_DEFECT_CLASSES`).
+`scripts/fetch_arcioni.sh` (kagglehub, with a direct-Zenodo fallback that
+needs no account) and `scripts/convert_arcioni.py` are written and tested
+against real inspected label data, but the ~193MB archive itself could not
+be downloaded to completion in this environment (network transfers were
+repeatedly cut off partway) - so this source is **not yet merged** into
+`backend/data/detect_dataset/`, and the committed `roadwatch_ft.pt` was
+**not retrained** on it. See `/model/README.md`'s "Second dataset (Arcioni
+et al.)" section for exact status and the commands to complete this once
+the archive is reachable.
+
 ## 2. Traffic volume — 100% synthetic (documented)
 
 No open per-road-segment traffic count data (real city traffic sensors,

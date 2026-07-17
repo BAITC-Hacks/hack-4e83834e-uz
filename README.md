@@ -188,7 +188,11 @@ Full detail in [`data/README.md`](data/README.md). Summary:
 - Detection training images: 13 hand-labeled real photos (Wikimedia
   Commons, permissive licenses, full attribution in
   `backend/data/sample_images/SOURCES.md`) plus a 1,000-image RDD2022
-  sample (CC BY-SA 4.0, reproducible via `scripts/fetch_rdd2022.sh`).
+  sample (CC BY-SA 4.0, reproducible via `scripts/fetch_rdd2022.sh`). A
+  third source (Arcioni et al., CC BY 4.0, ~1,261 more pothole boxes) is
+  scripted and tested (`scripts/fetch_arcioni.sh` /
+  `scripts/convert_arcioni.py`) but not yet merged/retrained — see
+  `model/README.md`.
 - Traffic volume: 100% synthetic (documented lognormal generator per road
   class + district multiplier) — no open per-segment traffic dataset was
   reachable in this environment.

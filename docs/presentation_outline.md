@@ -31,7 +31,12 @@
    into RoadWatch's taxonomy and merged - see `/data/README.md` for the
    exact class mapping and `scripts/fetch_rdd2022.sh` to reproduce.
    `broken_curb`/`faded_marking` still have zero real examples and are
-   explicitly marked "planned," not shown as detectable in the demo.
+   explicitly marked "planned," not shown as detectable in the demo. Next
+   step identified (scripts written, not yet run - see `/model/README.md`):
+   merging a third dataset (Arcioni et al., *Scientific Reports* 2026, CC BY
+   4.0, ~1,261 more pothole boxes + a new `manhole` class used only to
+   suppress pothole/manhole false positives, never shown as a defect) to
+   fix today's weakest class (`pothole`, 185 boxes, mAP50 0.089).
 
 7. **AI/ML approach** — Two learned components: (a) YOLOv8n fine-tuned for
    detection on the merged dataset above, (b) a LogisticRegression priority
