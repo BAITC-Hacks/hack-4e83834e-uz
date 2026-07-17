@@ -4,6 +4,13 @@ Target runtime: ~3:00. Screen-record the dashboard at `localhost:5173`
 with the backend already seeded (`python -m app.seed`) so the queue/map/
 analytics aren't empty.
 
+Before recording, run `scripts/pick_demo_image.py` (`cd backend && source
+venv/bin/activate && python3 ../scripts/pick_demo_image.py`) to see which
+`backend/data/sample_images/` photo the currently committed fine-tuned
+detector detects most confidently - use one from its "recommended demo
+images" list for the upload step below, instead of guessing, so the
+recording doesn't risk a dud/no-detection take.
+
 ---
 
 **[0:00-0:15] Hook — the problem**
