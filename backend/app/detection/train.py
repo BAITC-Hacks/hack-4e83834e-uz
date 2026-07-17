@@ -17,14 +17,29 @@ validation metrics that get reported (honestly) in /model/README.md.
 """
 from __future__ import annotations
 
+import tempfile
 from pathlib import Path
 
 import torch
+import yaml
 from ultralytics import YOLO
 
 from app.config import WEIGHTS_DIR, FINE_TUNED_WEIGHTS, PRETRAINED_WEIGHTS
 
 DATASET_YAML = Path(__file__).resolve().parent / "dataset.yaml"
+DATASET_ROOT = DATASET_YAML.parent.parent.parent / "data" / "detect_dataset"
+
+
+def _resolved_dataset_yaml() -> Path:
+    """dataset.yaml omits `path:` (a committed absolute path isn't portable
+    across machines/checkouts) - fill it in here from this repo's actual
+    location and write the result to a temp file for YOLO to load."""
+    spec = yaml.safe_load(DATASET_YAML.read_text())
+    spec["path"] = str(DATASET_ROOT)
+    tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False)
+    yaml.safe_dump(spec, tmp)
+    tmp.close()
+    return Path(tmp.name)
 
 
 def _best_device() -> str:
@@ -42,13 +57,14 @@ def _best_device() -> str:
 def main() -> None:
     WEIGHTS_DIR.mkdir(parents=True, exist_ok=True)
     model = YOLO(str(PRETRAINED_WEIGHTS))
-    n_train_images = len(list((DATASET_YAML.parent.parent.parent / "data" / "detect_dataset" / "images" / "train").glob("*.jpg")))
+    dataset_yaml = _resolved_dataset_yaml()
+    n_train_images = len(list((DATASET_ROOT / "images" / "train").glob("*.jpg")))
     # Larger dataset (RDD2022 merged in) -> bigger batch + early stopping;
     # tiny hand-labeled-only dataset -> the original small-batch, no-early-
     # stop settings that suit 9 training images.
     large_dataset = n_train_images > 50
     results = model.train(
-        data=str(DATASET_YAML),
+        data=str(dataset_yaml),
         epochs=50 if large_dataset else 60,
         imgsz=640,
         batch=16 if large_dataset else 4,
@@ -70,7 +86,7 @@ def main() -> None:
     FINE_TUNED_WEIGHTS.write_bytes(best.read_bytes())
     print(f"Saved fine-tuned weights to {FINE_TUNED_WEIGHTS}")
 
-    metrics = model.val(data=str(DATASET_YAML))
+    metrics = model.val(data=str(dataset_yaml))
     print("Validation metrics (tiny 4-image holdout - see /model/README.md for caveats):")
     print(f"  mAP50:    {metrics.box.map50:.3f}")
     print(f"  mAP50-95: {metrics.box.map:.3f}")

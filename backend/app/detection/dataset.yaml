@@ -1,7 +1,12 @@
 # YOLOv8 dataset spec for the tiny RoadWatch fine-tuning set.
 # See /backend/data/detect_dataset/ANNOTATIONS.md for how these boxes were produced
 # and /model/README.md for honest limitations of a model trained on this few images.
-path: /Users/dimash/Documents/roadwatch/backend/data/detect_dataset
+#
+# `path:` is intentionally omitted here (a committed absolute path isn't
+# portable across machines) - app/detection/train.py resolves it to this
+# repo's backend/data/detect_dataset at runtime before handing the spec to
+# YOLO. If you invoke ultralytics directly on this file instead of via
+# train.py, pass --data with an explicit path or set `path:` yourself.
 train: images/train
 val: images/val
 
