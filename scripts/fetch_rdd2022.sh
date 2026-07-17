@@ -22,9 +22,9 @@
 #      bucket (public, no credentials).
 #   2. Extracts it.
 #   3. Runs scripts/convert_rdd2022.py to sample n_images labeled images,
-#      map RDD2022 damage codes onto RoadWatch's taxonomy (D00/D01/D10/D11/D20
-#      -> crack, D40/D43/D44 -> pothole; everything else is dropped - see
-#      that script's docstring), and merge them into
+#      map RDD2022 damage codes onto RoadWatch's taxonomy (D00/D01/D10/D11/
+#      D20/D21 -> crack, D40 -> pothole; everything else, including D43/D44,
+#      is dropped - see that script's docstring), and merge them into
 #      backend/data/detect_dataset/ alongside the existing 13 hand-labeled
 #      images.
 #
