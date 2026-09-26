@@ -35,22 +35,37 @@ from app.scoring.traffic_sim import synthetic_daily_traffic
 
 RANDOM_SEED = 7
 
-# Approximate, illustrative Almaty district centers (not authoritative GIS
-# data - just enough spread to make the demo map look like a real city).
+# Approximate, illustrative district centers for Almaty and Astana (not
+# authoritative GIS data - just enough spread to make the demo map look realistic).
 DISTRICT_CENTERS = {
+    # Almaty
     "Medeu": (43.222, 77.043),
     "Bostandyk": (43.212, 76.909),
     "Almaly": (43.255, 76.945),
     "Auezov": (43.238, 76.851),
     "Nauryzbay": (43.174, 76.797),
     "Turksib": (43.284, 76.960),
+    # Astana
+    "Esil": (51.128, 71.430),
+    "Saryarka": (51.180, 71.390),
+    "Baikonur": (51.175, 71.430),
+    "Almaty (Astana)": (51.155, 71.475),
+    "Nura": (51.105, 71.385),
 }
 
-STREET_NAMES = [
+ALMATY_STREETS = [
     "Abay Ave", "Al-Farabi Ave", "Dostyk Ave", "Seifullin Ave", "Rozybakiev St",
     "Zharokov St", "Tole Bi St", "Nazarbayev Ave", "Raiymbek Ave", "Momyshuly Ave",
     "Suyunbai Ave", "Ryskulov Ave", "Zhandosov St", "Baizakov St", "Gagarin Ave",
 ]
+
+ASTANA_STREETS = [
+    "Mangilik El Ave", "Kabanbay Batyr Ave", "Turan Ave", "Respublika Ave",
+    "Sarayshyk St", "Syganak St", "Kenessary St", "Bogenbay Batyr Ave", "Tauelsizdik Ave",
+    "Uly Dala Ave", "Qabanbay Batyr Ave", "Turkestan St",
+]
+
+ASTANA_DISTRICTS = {"Esil", "Saryarka", "Baikonur", "Almaty (Astana)", "Nura"}
 
 ROAD_CLASS_WEIGHTS = [("arterial", 0.2), ("collector", 0.4), ("local", 0.4)]
 
@@ -79,6 +94,7 @@ def seed() -> None:
         segments: list[models.RoadSegment] = []
         seg_id_counter = 0
         for district, (clat, clng) in DISTRICT_CENTERS.items():
+            street_pool = ASTANA_STREETS if district in ASTANA_DISTRICTS else ALMATY_STREETS
             for _ in range(4):
                 seg_id_counter += 1
                 road_class = _weighted_choice(rng, ROAD_CLASS_WEIGHTS)
@@ -86,7 +102,7 @@ def seed() -> None:
                 lng = clng + rng.uniform(-0.02, 0.02)
                 traffic = synthetic_daily_traffic(road_class, district, seed=seg_id_counter * 97 + RANDOM_SEED)
                 segment = models.RoadSegment(
-                    name=f"{rng.choice(STREET_NAMES)} ({district})",
+                    name=f"{rng.choice(street_pool)} ({district})",
                     district=district,
                     road_class=road_class,
                     lat=lat,
@@ -143,7 +159,7 @@ def seed() -> None:
             "faded_marking": (5.0, 25.0),
         }
         CONF_RANGE = (0.35, 0.95)
-        N_SYNTHETIC = 40
+        N_SYNTHETIC = 70
 
         synthetic_defects: list[models.Defect] = []
         for _ in range(N_SYNTHETIC):

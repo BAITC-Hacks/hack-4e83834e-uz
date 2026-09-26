@@ -1,20 +1,3 @@
-"""Fine-tune YOLOv8n on the RoadWatch detect_dataset.
-
-By default this dataset is the 13 hand-labeled images plus a sampled,
-class-mapped subset of RDD2022 (CRDDC'2022) - see
-scripts/fetch_rdd2022.sh and scripts/convert_rdd2022.py for how that subset
-is produced, and /data/README.md + /model/README.md for exactly which
-images are real, which taxonomy classes they cover, and honest measured
-accuracy. If you skip that step, this trains on just the 13 hand-labeled
-images instead - still a real fine-tune, just a much smaller one.
-
-Run it with:
-
-    cd backend && source venv/bin/activate && python -m app.detection.train
-
-Writes the resulting weights to data/weights/roadwatch_ft.pt and prints the
-validation metrics that get reported (honestly) in /model/README.md.
-"""
 from __future__ import annotations
 
 import tempfile

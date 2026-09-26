@@ -8,6 +8,7 @@ from app.config import UPLOADS_DIR
 from app.database import get_db
 from app.detection.detector import detect
 from app.routers.defects import _save_upload
+from app.scoring.geo import find_nearest_segment
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -19,9 +20,19 @@ MATCH_WINDOW_DAYS = 90
 
 @router.post("", response_model=schemas.ReportSubmitResult)
 def submit_report(
-    segment_id: int = Form(...),
+    # segment_id is optional so that future API clients (e.g. a native mobile
+    # app) can omit the manual dropdown selection when they supply GPS coords.
+    # The frontend still always sends it (from the confirmable dropdown), so
+    # the omission path is primarily for direct API callers.
+    segment_id: int | None = Form(None),
     note: str | None = Form(None),
     source: str = Form("citizen"),
+    # Optional GPS coordinates captured by the client at photo-taking time.
+    # When present these give the Defect a precise pin rather than the
+    # segment centroid; segment_id is still required for the priority scorer
+    # because district, road_class, and daily_traffic live on RoadSegment.
+    lat: float | None = Form(None),
+    lng: float | None = Form(None),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
@@ -29,10 +40,42 @@ def submit_report(
     the photo; if it matches an existing open defect at the same segment
     (same class, reported recently), this becomes a repeat report - which
     feeds the repeat-report factor of the priority score. Otherwise a new
-    Defect is created from the highest-confidence detection."""
-    segment = db.get(models.RoadSegment, segment_id)
-    if not segment:
-        raise HTTPException(404, "Road segment not found")
+    Defect is created from the highest-confidence detection.
+
+    Segment resolution order
+    ------------------------
+    1. segment_id provided → use it directly (normal frontend path).
+    2. segment_id absent, lat/lng present → resolve via find_nearest_segment();
+       if nothing is within 150 m, return no_segment_matched=True so the
+       caller can prompt the user rather than silently guessing.
+    3. Neither segment_id nor lat/lng → HTTP 422 (no location signal at all).
+
+    The defect's geographic coordinates are set to the caller-supplied GPS
+    fix when available, falling back to the segment centroid so the column
+    is never null."""
+    # ── Segment resolution ───────────────────────────────────────────────
+    if segment_id is not None:
+        segment = db.get(models.RoadSegment, segment_id)
+        if not segment:
+            raise HTTPException(404, "Road segment not found")
+    elif lat is not None and lng is not None:
+        segment = find_nearest_segment(lat, lng, db)
+        if segment is None:
+            return schemas.ReportSubmitResult(
+                matched_existing_defect=False,
+                detections_found=0,
+                defect=None,
+                no_segment_matched=True,
+                message="Your GPS location didn't match any tracked road segment. "
+                        "Please select the nearest one manually and resubmit.",
+                message_ru="Ваши GPS-координаты не совпали ни с одним известным участком дороги. "
+                           "Пожалуйста, выберите ближайший участок вручную и попробуйте снова.",
+            )
+    else:
+        raise HTTPException(
+            422,
+            "Either segment_id or GPS coordinates (lat + lng) must be provided.",
+        )
 
     image_name = _save_upload(file)
     image_path = UPLOADS_DIR / image_name
@@ -77,6 +120,11 @@ def submit_report(
             message_ru="Совпало с уже открытым дефектом на этом месте - добавлено как повторное обращение.",
         )
 
+    # Prefer the caller's GPS fix; fall back to the segment centroid so the
+    # column is never null even when the client doesn't support geolocation.
+    defect_lat = lat if lat is not None else segment.lat
+    defect_lng = lng if lng is not None else segment.lng
+
     defect = models.Defect(
         segment_id=segment.id,
         defect_class=best.defect_class,
@@ -85,8 +133,8 @@ def submit_report(
         area_pct=best.area_pct,
         model_source=best.model,
         image_path=image_name,
-        lat=segment.lat,
-        lng=segment.lng,
+        lat=defect_lat,
+        lng=defect_lng,
         status="open",
     )
     db.add(defect)

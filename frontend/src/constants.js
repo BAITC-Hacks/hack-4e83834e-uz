@@ -33,6 +33,11 @@ export const DISTRICTS = [
   { value: "Auezov", label: { en: "Auezov", ru: "Ауэзовский" } },
   { value: "Nauryzbay", label: { en: "Nauryzbay", ru: "Наурызбайский" } },
   { value: "Turksib", label: { en: "Turksib", ru: "Турксибский" } },
+  { value: "Esil", label: { en: "Esil (Astana)", ru: "Есильский (Астана)" } },
+  { value: "Saryarka", label: { en: "Saryarka (Astana)", ru: "Сарыаркинский (Астана)" } },
+  { value: "Baikonur", label: { en: "Baikonur (Astana)", ru: "Байконурский (Астана)" } },
+  { value: "Almaty (Astana)", label: { en: "Almaty (Astana)", ru: "Алматинский (Астана)" } },
+  { value: "Nura", label: { en: "Nura (Astana)", ru: "Нуринский (Астана)" } },
 ];
 
 export const DISTRICT_LABEL_MAP = Object.fromEntries(DISTRICTS.map((d) => [d.value, d.label]));

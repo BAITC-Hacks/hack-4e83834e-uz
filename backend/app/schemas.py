@@ -82,3 +82,7 @@ class ReportSubmitResult(BaseModel):
     defect: DefectOut | None
     message: str
     message_ru: str
+    # True only when lat/lng were supplied but no RoadSegment fell within the
+    # acceptance radius.  Returned as False on all other paths so existing
+    # consumers don't need to handle a missing field.
+    no_segment_matched: bool = False

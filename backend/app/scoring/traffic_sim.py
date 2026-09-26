@@ -38,6 +38,12 @@ DISTRICT_TRAFFIC_MULTIPLIER = {
     "Auezov": 1.0,
     "Nauryzbay": 0.75,
     "Turksib": 0.85,
+    # Astana districts
+    "Esil": 1.3,
+    "Saryarka": 1.2,
+    "Baikonur": 1.1,
+    "Almaty (Astana)": 1.2,
+    "Nura": 1.0,
 }
 
 LOGNORMAL_SIGMA = 0.35  # controls spread around the road-class base
