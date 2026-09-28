@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import UPLOADS_DIR
 from app.database import init_db
-from app.routers import analytics, defects, queue, reports, reviews, segments
+from app.routers import analytics, auth, defects, detect_preview, queue, reports, reviews, segments
 
 
 @asynccontextmanager
@@ -33,12 +33,14 @@ app.add_middleware(
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/media", StaticFiles(directory=UPLOADS_DIR), name="media")
 
+app.include_router(auth.router)
 app.include_router(defects.router)
 app.include_router(reports.router)
 app.include_router(queue.router)
 app.include_router(reviews.router)
 app.include_router(analytics.router)
 app.include_router(segments.router)
+app.include_router(detect_preview.router)
 
 
 @app.get("/health")

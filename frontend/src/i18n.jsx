@@ -82,6 +82,64 @@ const STRINGS = {
 
     vehicles_per_day: "vehicles/day",
     view_details: "View details",
+
+    landing_title: "AI-assisted road defect detection & repair prioritization",
+    landing_lead:
+      "RoadWatch detects road defects automatically and ranks them using traffic volume, defect severity, and repeat reports. Repairs are never dispatched automatically — an authorized human analyst always inspects and decides.",
+    landing_citizen_title: "I'm a citizen — report a road defect",
+    landing_citizen_desc:
+      "Upload a photo of a pothole or crack near you. RoadWatch will detect it and add it to the city's repair queue. Sign in quickly using SMS verification.",
+    landing_citizen_btn: "Continue with Phone",
+    landing_admin_title: "Analyst / Admin login",
+    landing_admin_desc:
+      "Access the prioritized review queue, inspect AI detection explanations and geo-segments, and schedule maintenance crews.",
+    landing_email_label: "Analyst email",
+    landing_password_label: "Password",
+    landing_login_btn: "Sign in as Analyst",
+    landing_login_busy: "Signing in…",
+    phone_enter_number: "Phone number",
+    phone_number_placeholder: "+7 701 555 0101",
+    phone_send_code: "Send SMS code",
+    phone_sending_code: "Sending SMS…",
+    phone_enter_code: "Confirmation code",
+    phone_code_placeholder: "6-digit code",
+    phone_verify_btn: "Verify & proceed to report",
+    phone_verifying: "Verifying…",
+    phone_change_number: "Change phone number",
+    auth_not_analyst: "This account is not registered as an analyst",
+    nav_sign_out: "Sign out",
+    auth_loading: "Checking authorization…",
+
+    hero_eyebrow: "AI FOR SAFER ROADS",
+    hero_heading_1: "automated road defect detection & ",
+    hero_heading_highlight: "repair prioritization with AI.",
+    hero_desc:
+      "RoadWatch analyzes road surfaces, detects potholes and cracks, evaluates their severity and traffic volume on the segment. Nothing is dispatched automatically \u2014 the decision is always made by a human analyst.",
+    hero_btn_citizen: "Report a road defect",
+    hero_btn_admin: "Analyst / Admin login",
+    hero_btn_start: "get started",
+    hero_btn_how: "how it works",
+    badge_public: "PUBLIC ACCESS",
+    badge_staff: "STAFF ONLY",
+    arch_eyebrow: "HOW IT WORKS",
+    arch_title: "Four-stage prioritization pipeline",
+    arch_subtitle:
+      "From citizen defect report to municipal work order: AI detects and ranks, humans decide.",
+    step1_title: "1. Photo upload",
+    step1_desc:
+      "Citizen smartphone photo submission or municipal road inspection with GPS coordinates.",
+    step2_title: "2. Server-side YOLOv8",
+    step2_desc:
+      "Automatic detection of defect bounding boxes (pothole, crack) and physical damage area calculation.",
+    step3_title: "3. Priority ranking",
+    step3_desc:
+      "Weighted scoring combining defect severity, road traffic volume, and repeat report clustering.",
+    step4_title: "4. Human analyst review",
+    step4_desc:
+      "Human-in-the-loop: authorized municipal analyst inspects model explanations and approves repairs.",
+    impact_title: "Transparent & Auditable Decisions",
+    impact_desc:
+      "Repairs are never dispatched automatically. Every approved or deferred order is recorded in an immutable audit log signed by a named analyst.",
   },
   ru: {
     brand: "RoadWatch",
@@ -159,6 +217,64 @@ const STRINGS = {
 
     vehicles_per_day: "автомобилей/день",
     view_details: "Подробнее",
+
+    landing_title: "Распознавание дефектов дорог и приоритизация ремонта с помощью ИИ",
+    landing_lead:
+      "RoadWatch автоматически находит дорожные дефекты и ранжирует их с учётом интенсивности движения, степени повреждения и повторных обращений. Бригады никогда не отправляются автоматически — решение всегда принимает уполномоченный аналитик.",
+    landing_citizen_title: "Я житель — сообщить о дефекте дороги",
+    landing_citizen_desc:
+      "Загрузите фото выбоины или трещины. RoadWatch распознает дефект и передаст его в очередь дорожных служб города. Быстрый вход по SMS-коду.",
+    landing_citizen_btn: "Войти по номеру телефона",
+    landing_admin_title: "Вход для аналитика / администратора",
+    landing_admin_desc:
+      "Доступ к очереди приоритизации дефектов, объяснениям детектора и карте участков, а также утверждение ремонтных нарядов.",
+    landing_email_label: "Email аналитика",
+    landing_password_label: "Пароль",
+    landing_login_btn: "Войти как аналитик",
+    landing_login_busy: "Вход…",
+    phone_enter_number: "Номер телефона",
+    phone_number_placeholder: "+7 701 555 0101",
+    phone_send_code: "Получить SMS-код",
+    phone_sending_code: "Отправка SMS…",
+    phone_enter_code: "Код из SMS",
+    phone_code_placeholder: "6-значный код",
+    phone_verify_btn: "Подтвердить и перейти к отправке",
+    phone_verifying: "Проверка…",
+    phone_change_number: "Изменить номер",
+    auth_not_analyst: "Этот аккаунт не зарегистрирован в списке аналитиков",
+    nav_sign_out: "Выйти",
+    auth_loading: "Проверка доступа…",
+
+    hero_eyebrow: "ИИ ДЛЯ БЕЗОПАСНЫХ ДОРОГ",
+    hero_heading_1: "автоматическое обнаружение дефектов дорог и ",
+    hero_heading_highlight: "приоритизация ремонта с помощью ИИ.",
+    hero_desc:
+      "RoadWatch анализирует дорожные покрытия и выявляет выбоины и трещины, оценивает их серьёзность и интенсивность движения на участке. Ничего не отправляется автоматически — решение всегда принимает аналитик.",
+    hero_btn_citizen: "Сообщить о дефекте",
+    hero_btn_admin: "Вход для аналитика",
+    hero_btn_start: "начать работу",
+    hero_btn_how: "как это работает",
+    badge_public: "ДОСТУП ДЛЯ ЖИТЕЛЕЙ",
+    badge_staff: "ДЛЯ АНАЛИТИКОВ",
+    arch_eyebrow: "КАК ЭТО РАБОТАЕТ",
+    arch_title: "Четырёхэтапный конвейер приоритизации",
+    arch_subtitle:
+      "От фиксации дефекта жителем до наряда дорожной службы: модель ранжирует, человек утверждает.",
+    step1_title: "1. Фотофиксация",
+    step1_desc:
+      "Загрузка фото гражданами через веб-форму или муниципальными инспекциями с фиксацией координат.",
+    step2_title: "2. Серверный YOLOv8",
+    step2_desc:
+      "Выявление дефектов (выбоины, трещины) на сервере без необходимости локальной обработки.",
+    step3_title: "3. Модель приоритета",
+    step3_desc:
+      "Ранжирование с учётом трафика участка, площади дефекта и повторных обращений граждан.",
+    step4_title: "4. Решение аналитика",
+    step4_desc:
+      "Человек в контуре: сертифицированный аналитик проверяет объяснение ИИ и утверждает ремонт.",
+    impact_title: "Прозрачность и контроль",
+    impact_desc:
+      "Никакой автоматической отправки бригад. Каждое решение сохраняется в неизменяемый журнал аудита с подписью аналитика.",
   },
 };
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CircleMarker, MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import { DEFECT_TYPE_MAP, STATUS_META } from "../constants";
@@ -32,6 +32,139 @@ function MapController({ center, zoom }) {
     }
   }, [center?.[0], center?.[1], zoom, map]);
   return null;
+}
+
+function MapSearchControl({ address, onGeocode, onClear }) {
+  const map = useMap();
+  const [inputValue, setInputValue] = useState(address || "");
+  const [results, setResults] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const containerRef = useRef(null);
+  const debounceRef = useRef(null);
+
+  // Sync external address changes (e.g., resolved from EXIF GPS or pin drag)
+  useEffect(() => {
+    if (address !== undefined) {
+      setInputValue(address || "");
+    }
+  }, [address]);
+
+  // Prevent Leaflet map dragging/clicking when interacting with the search control
+  useEffect(() => {
+    if (containerRef.current) {
+      L.DomEvent.disableClickPropagation(containerRef.current);
+      L.DomEvent.disableScrollPropagation(containerRef.current);
+    }
+  }, []);
+
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    setInputValue(val);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (!val || val.trim().length < 2) {
+      setResults([]);
+      setIsOpen(false);
+      return;
+    }
+
+    setLoading(true);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+          val.trim()
+        )}&format=json&countrycodes=kz&accept-language=ru,en&limit=5`;
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          setResults(data);
+          setIsOpen(true);
+        }
+      } catch (err) {
+        console.warn("Geocoding search failed:", err);
+      } finally {
+        setLoading(false);
+      }
+    }, 350);
+  };
+
+  const handleSelect = (item) => {
+    const lat = parseFloat(item.lat);
+    const lng = parseFloat(item.lon);
+    setInputValue(item.display_name);
+    setIsOpen(false);
+    map.flyTo([lat, lng], 16);
+    onGeocode?.({ lat, lng, name: item.display_name });
+  };
+
+  const handleClear = () => {
+    setInputValue("");
+    setResults([]);
+    setIsOpen(false);
+    onClear?.();
+  };
+
+  return (
+    <div ref={containerRef} className="map-search-container">
+      <div className="map-search-bar">
+        {/* Search icon */}
+        <svg
+          className="map-search-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+
+        <input
+          type="text"
+          className="map-search-input"
+          value={inputValue}
+          onChange={handleInputChange}
+          onFocus={() => {
+            if (results.length > 0) setIsOpen(true);
+          }}
+          placeholder="Поиск адреса / Search address…"
+        />
+
+        {loading && <span className="map-search-spinner" />}
+
+        {inputValue && (
+          <button
+            type="button"
+            className="map-search-clear"
+            onClick={handleClear}
+            title="Очистить / Clear"
+            aria-label="Clear address search"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
+      {isOpen && results.length > 0 && (
+        <ul className="map-search-dropdown">
+          {results.map((item, idx) => (
+            <li
+              key={item.place_id || idx}
+              className="map-search-item"
+              onClick={() => handleSelect(item)}
+            >
+              <span className="map-search-item-pin">📍</span>
+              <span className="map-search-item-text">{item.display_name}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 function DraggableMarker({ lat, lng, onChange }) {
@@ -81,6 +214,10 @@ export default function MapView({
   center,
   zoom = 11,
   style,
+  showGeocoder = false,
+  onGeocode,
+  searchAddress = "",
+  onClearAddress,
 }) {
   const { t, pick } = useLang();
 
@@ -100,6 +237,15 @@ export default function MapView({
 
       {/* Recenter controller when center or zoom props update */}
       <MapController center={center} zoom={zoom} />
+
+      {/* In-map geocoding search bar (Nominatim KZ, dark UI) */}
+      {showGeocoder && (
+        <MapSearchControl
+          address={searchAddress}
+          onGeocode={onGeocode}
+          onClear={onClearAddress}
+        />
+      )}
 
       {/* Existing defects as circle markers */}
       {defects.map((defect) => {

@@ -1,24 +1,3 @@
-"""Populates the database with demo data so the dashboard has something to
-show immediately after `git clone` + setup, without requiring a live
-detection run first.
-
-Road segments use Almaty district names and approximate (illustrative, not
-authoritative) district-center coordinates purely as realistic-looking demo
-geography - see /data/README.md. Traffic volumes come from the documented
-synthetic generator in scoring/traffic_sim.py.
-
-A handful of defects are created from REAL YOLOv8 inference on the
-hand-labeled sample images (data/sample_images/) - these carry
-model_source="roadwatch-finetuned". The rest are purely synthetic
-(model_source="seed-synthetic": randomly generated class/confidence/area,
-no image was actually run through the detector) purely to give the demo
-queue/map/analytics enough volume to be interesting - this is stated
-explicitly here and in the README so nobody mistakes seed volume for
-detection accuracy.
-
-Run with:
-    cd backend && source venv/bin/activate && python -m app.seed
-"""
 from __future__ import annotations
 
 import random
@@ -157,6 +136,7 @@ def seed() -> None:
             "crack": (1.0, 15.0),
             "broken_curb": (3.0, 12.0),
             "faded_marking": (5.0, 25.0),
+            "manhole": (0.1, 0.6),
         }
         CONF_RANGE = (0.35, 0.95)
         N_SYNTHETIC = 70

@@ -7,6 +7,7 @@ from app import models, schemas, services
 from app.config import UPLOADS_DIR
 from app.database import get_db
 from app.detection.detector import detect
+from app.firebase_auth import verify_firebase_user
 from app.routers.defects import _save_upload
 from app.scoring.geo import find_nearest_segment
 
@@ -35,6 +36,7 @@ def submit_report(
     lng: float | None = Form(None),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
+    user: dict = Depends(verify_firebase_user),
 ):
     """Citizen (or dashcam/inspection) defect submission. Runs detection on
     the photo; if it matches an existing open defect at the same segment

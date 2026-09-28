@@ -25,3 +25,35 @@ frontend/dist/
 
 # OS
 .DS_Store
+
+# Environment variables & secrets
+.env
+*.env
+serviceAccountKey.json
+*firebase-adminsdk*.json
+
+# Datasets and training images (Do not commit to git)
+backend/data/detect_dataset/
+backend/runs/
+*.jpg
+*.jpeg
+*.png
+*.JPG
+
+# Model weights
+*.pt
+*.onnx
+backend/data/weights/
+
+# Python caches & virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Node & Frontend builds
+node_modules/
+dist/
+build/
+.DS_Store

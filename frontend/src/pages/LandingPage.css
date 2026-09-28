@@ -1,0 +1,447 @@
+/* ══════════════════════════════════════════════════════════════════════
+   LandingPage.css – RoadWatch hero  (local dark / light theme toggle)
+   ══════════════════════════════════════════════════════════════════════ */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
+
+/* ── Dark theme tokens (default) ───────────────────────────────────── */
+.landing-page {
+  --lp-bg:           #080d1a;
+  --lp-nav-bg:       rgba(8, 13, 26, 0.82);
+  --lp-text:         #ffffff;
+  --lp-text-muted:   #7a8599;
+  --lp-accent:       #3b82f6;
+  --lp-accent-hover: #2563eb;
+  --lp-surface:      #0f1629;
+  --lp-border:       rgba(255, 255, 255, 0.07);
+  --lp-pill-bg:      rgba(255, 255, 255, 0.05);
+  --lp-pill-border:  rgba(255, 255, 255, 0.09);
+  --lp-ghost-bg:     rgba(255, 255, 255, 0.04);
+  --lp-ghost-border: rgba(255, 255, 255, 0.10);
+  --lp-ghost-text:   #c1c9d8;
+  --lp-input-bg:     #060a14;
+  --lp-input-border: rgba(255, 255, 255, 0.10);
+}
+
+/* ── Light theme override ──────────────────────────────────────────── */
+.landing-page.lp-light {
+  --lp-bg:           #f4efe9;
+  --lp-nav-bg:       rgba(244, 239, 233, 0.82);
+  --lp-text:         #0f172a;
+  --lp-text-muted:   #64748b;
+  --lp-surface:      #ffffff;
+  --lp-border:       rgba(0, 0, 0, 0.07);
+  --lp-pill-bg:      rgba(0, 0, 0, 0.04);
+  --lp-pill-border:  rgba(0, 0, 0, 0.07);
+  --lp-ghost-bg:     rgba(0, 0, 0, 0.03);
+  --lp-ghost-border: rgba(0, 0, 0, 0.10);
+  --lp-ghost-text:   #334155;
+  --lp-input-bg:     #f8f5f1;
+  --lp-input-border: rgba(0, 0, 0, 0.12);
+}
+
+/* ══ Root layout ═══════════════════════════════════════════════════════
+   position: fixed takes the page out of the normal app-shell flow and
+   covers the shell topbar (z-index 20). When the component unmounts
+   (user navigates away after auth) the shell becomes visible again.  */
+.landing-page {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--lp-bg);
+  color: var(--lp-text);
+  overflow-y: auto;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+/* ══ Navigation ═══════════════════════════════════════════════════════ */
+.lp-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 48px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--lp-nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--lp-border);
+  flex-shrink: 0;
+  transition: background-color 0.35s ease, border-color 0.35s ease;
+}
+
+.lp-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lp-logo-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--lp-accent);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.lp-brand-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.lp-brand-name {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.lp-brand-sub {
+  font-size: 12px;
+  color: var(--lp-text-muted);
+  line-height: 1.15;
+}
+
+.lp-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ── Language toggle ── */
+.lp-lang-toggle {
+  display: flex;
+  border-radius: 999px;
+  border: 1px solid var(--lp-border);
+  padding: 3px;
+  background: var(--lp-pill-bg);
+  transition: background-color 0.35s ease, border-color 0.35s ease;
+}
+
+.lp-lang-toggle button {
+  border: none;
+  background: transparent;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lp-text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.lp-lang-toggle button.active {
+  background: var(--lp-accent);
+  color: #ffffff;
+}
+
+/* ── Theme toggle ── */
+.lp-theme-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--lp-border);
+  background: var(--lp-pill-bg);
+  color: var(--lp-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 0.35s ease, border-color 0.35s ease, color 0.2s ease;
+}
+
+.lp-theme-btn:hover {
+  color: var(--lp-text);
+}
+
+/* ── Nav CTA button ── */
+.lp-nav-cta {
+  background: var(--lp-accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 11px 22px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+
+.lp-nav-cta:hover {
+  background: var(--lp-accent-hover);
+}
+
+/* ══ Hero section ═════════════════════════════════════════════════════ */
+.lp-hero {
+  padding: 48px 48px 80px;
+  max-width: 920px;
+}
+
+/* ── Eyebrow pill ── */
+.lp-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px;
+  border-radius: 999px;
+  background: var(--lp-pill-bg);
+  border: 1px solid var(--lp-pill-border);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--lp-text-muted);
+  margin-bottom: 40px;
+  transition: background-color 0.35s ease, border-color 0.35s ease;
+}
+
+.lp-eyebrow-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--lp-accent);
+  flex-shrink: 0;
+}
+
+/* ── Headline ── */
+.lp-headline {
+  font-size: clamp(36px, 6.2vw, 64px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  margin: 0 0 28px 0;
+}
+
+.lp-headline-accent {
+  color: var(--lp-accent);
+}
+
+/* ── Subtext ── */
+.lp-subtext {
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--lp-text-muted);
+  margin: 0 0 48px 0;
+  max-width: 650px;
+}
+
+/* ── CTA row ── */
+.lp-cta-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Primary CTA */
+.lp-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--lp-accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-transform: lowercase;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.lp-btn-primary:hover {
+  background: var(--lp-accent-hover);
+  transform: translateY(-1px);
+}
+
+.lp-btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Ghost / outline CTA */
+.lp-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--lp-ghost-bg);
+  color: var(--lp-ghost-text);
+  border: 1px solid var(--lp-ghost-border);
+  border-radius: 999px;
+  padding: 15px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-transform: lowercase;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+              color 0.2s ease, transform 0.15s ease;
+}
+
+.lp-btn-ghost:hover {
+  border-color: var(--lp-text-muted);
+  color: var(--lp-text);
+  transform: translateY(-1px);
+}
+
+/* ══ PhoneLogin card (scoped to landing page) ════════════════════════ */
+.lp-auth-wrapper {
+  max-width: 400px;
+}
+
+.lp-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: none;
+  color: var(--lp-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 12px;
+  transition: color 0.2s ease;
+}
+
+.lp-back-link:hover {
+  color: var(--lp-text);
+}
+
+.lp-auth-card {
+  background: var(--lp-surface);
+  border: 1px solid var(--lp-border);
+  border-radius: 14px;
+  padding: 24px 22px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.35s ease, border-color 0.35s ease;
+}
+
+.lp-auth-card .form-field label {
+  color: var(--lp-text-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.lp-auth-card .form-field input {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: var(--lp-input-bg);
+  border: 1px solid var(--lp-input-border);
+  color: var(--lp-text);
+  font-size: 13.5px;
+  transition: background-color 0.35s ease, border-color 0.25s ease, color 0.35s ease;
+}
+
+.lp-auth-card .form-field input:focus {
+  outline: none;
+  border-color: var(--lp-accent);
+}
+
+.lp-auth-card .btn-primary {
+  background: var(--lp-accent);
+  border: none;
+  color: #ffffff;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.lp-auth-card .btn-primary:hover:not(:disabled) {
+  background: var(--lp-accent-hover);
+}
+
+.lp-auth-card .btn {
+  background: var(--lp-ghost-bg);
+  border: 1px solid var(--lp-ghost-border);
+  color: var(--lp-ghost-text);
+  transition: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease;
+}
+
+/* ══ Responsive ═══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .lp-nav {
+    padding: 12px 20px;
+  }
+
+  .lp-brand-sub {
+    display: none;
+  }
+
+  .lp-nav-cta {
+    padding: 9px 16px;
+    font-size: 13px;
+  }
+
+  .lp-hero {
+    padding: 32px 20px 60px;
+  }
+
+  .lp-eyebrow {
+    font-size: 10px;
+    padding: 7px 14px;
+    margin-bottom: 28px;
+    letter-spacing: 0.12em;
+  }
+
+  .lp-subtext {
+    font-size: 15px;
+    margin-bottom: 36px;
+  }
+
+  .lp-cta-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .lp-btn-primary,
+  .lp-btn-ghost {
+    justify-content: center;
+    font-size: 15px;
+    padding: 14px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lp-nav-cta {
+    display: none;
+  }
+
+  .lp-lang-toggle button {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .lp-theme-btn {
+    width: 36px;
+    height: 36px;
+  }
+}

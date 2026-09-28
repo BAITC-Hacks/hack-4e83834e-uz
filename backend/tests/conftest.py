@@ -8,6 +8,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app import models
 from app.database import Base, get_db
+from app.firebase_auth import verify_admin_user, verify_firebase_user
 from app.main import app
 
 
@@ -27,6 +28,15 @@ def client():
             db.close()
 
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[verify_firebase_user] = lambda: {
+        "uid": "test_uid",
+        "email": "admin@roadwatch.kz",
+        "phone_number": "+77015550101",
+    }
+    app.dependency_overrides[verify_admin_user] = lambda: {
+        "uid": "test_uid",
+        "email": "admin@roadwatch.kz",
+    }
 
     db = TestSessionLocal()
     segment = models.RoadSegment(

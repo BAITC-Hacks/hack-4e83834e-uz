@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app import models, schemas, services
 from app.database import get_db
+from app.firebase_auth import verify_admin_user
 
 router = APIRouter(prefix="/defects", tags=["reviews"])
 
@@ -14,11 +15,17 @@ ACTION_TO_STATUS = {
 
 
 @router.post("/{defect_id}/review", response_model=schemas.DefectOut)
-def review_defect(defect_id: int, review: schemas.ReviewIn, db: Session = Depends(get_db)):
+def review_defect(
+    defect_id: int,
+    review: schemas.ReviewIn,
+    db: Session = Depends(get_db),
+    admin_user: dict = Depends(verify_admin_user),
+):
     """The ONLY endpoint that can move a defect out of the open queue.
     Requires an explicit reviewer identity and action, and writes an
     immutable, timestamped ApprovalLog row - this is what satisfies the
-    human-in-the-loop constraint: the AI ranks, a named human decides."""
+    human-in-the-loop constraint: the AI ranks, a named human decides.
+    Gated by Firebase admin token verification (email allowlist)."""
     defect = db.get(models.Defect, defect_id)
     if not defect:
         raise HTTPException(404, "Defect not found")

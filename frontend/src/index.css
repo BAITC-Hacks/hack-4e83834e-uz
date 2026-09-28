@@ -8,6 +8,8 @@ html,
 body,
 #root {
   height: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 body {
@@ -15,6 +17,8 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   background: var(--surface-0);
   color: var(--text-primary);
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 a {
@@ -25,18 +29,38 @@ a {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .topbar {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
   padding: 14px 24px;
   background: var(--surface-1);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 20;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .topbar {
+    padding: 10px 14px;
+    gap: 12px;
+  }
+  .brand-sub {
+    display: none;
+  }
+  .nav-links {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    padding-top: 4px;
+    gap: 6px;
+  }
 }
 
 .brand {
@@ -553,4 +577,233 @@ a {
   display: flex;
   align-items: center;
   gap: 5px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   In-Map Geocoding Search Control (Dark UI)
+   ══════════════════════════════════════════════════════════════════════ */
+.map-search-container {
+  position: absolute;
+  top: 10px;
+  left: 52px;
+  right: 12px;
+  max-width: 440px;
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+@media (max-width: 480px) {
+  .map-search-container {
+    left: 48px;
+    right: 8px;
+    max-width: calc(100% - 56px);
+  }
+}
+
+.map-search-bar {
+  display: flex;
+  align-items: center;
+  background: rgba(26, 30, 38, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  padding: 4px 10px 4px 12px;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.map-search-bar:focus-within {
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.map-search-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-right: 8px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.map-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #f1f5f9;
+  font-size: 13px;
+  line-height: 28px;
+  padding: 0;
+  min-width: 0;
+  font-family: inherit;
+}
+
+.map-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.map-search-clear {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
+  margin-left: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.map-search-clear:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.map-search-dropdown {
+  margin: 6px 0 0;
+  padding: 6px 0;
+  list-style: none;
+  background: rgba(26, 30, 38, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  max-height: 230px;
+  overflow-y: auto;
+}
+
+.map-search-item {
+  padding: 9px 12px;
+  font-size: 12.5px;
+  color: #e2e8f0;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background-color 0.15s;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.4;
+}
+
+.map-search-item:last-child {
+  border-bottom: none;
+}
+
+.map-search-item:hover,
+.map-search-item:focus {
+  background: rgba(59, 130, 246, 0.18);
+  color: #ffffff;
+}
+
+.map-search-item-pin {
+  font-size: 13px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.map-search-item-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.map-search-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: mapSearchSpin 0.8s linear infinite;
+  flex-shrink: 0;
+  margin-right: 6px;
+}
+
+@keyframes mapSearchSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Defect Submission Page Responsive Grid
+   Desktop (>= 1024px): 2 columns (Form on left, Map on right)
+   Mobile/Tablet (< 1024px): Stacks:
+     1. Photo & YOLO tags
+     2. Map container (height: 380px)
+     3. Comments & Submit button
+     4. Results / Explainer
+   ══════════════════════════════════════════════════════════════════════ */
+.submit-grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "photo   map"
+    "submit  map"
+    "info    info";
+  gap: 16px;
+  align-items: start;
+}
+
+.submit-panel-photo {
+  grid-area: photo;
+}
+
+.submit-panel-map {
+  grid-area: map;
+}
+
+.submit-panel-submit {
+  grid-area: submit;
+}
+
+.submit-panel-info {
+  grid-area: info;
+}
+
+.submit-map-wrapper {
+  height: 440px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  position: relative;
+}
+
+@media (max-width: 1023px) {
+  .submit-grid-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .submit-panel-photo {
+    order: 1;
+  }
+
+  .submit-panel-map {
+    order: 2;
+  }
+
+  .submit-panel-submit {
+    order: 3;
+  }
+
+  .submit-panel-info {
+    order: 4;
+  }
+
+  .submit-map-wrapper {
+    height: 380px;
+    width: 100%;
+  }
 }
